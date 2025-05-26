@@ -1,0 +1,132 @@
+<!-- Head -->
+<%- include("partials/head",{title: "FitWell" , cssFile: "LandingPage_style.css" }) %>
+
+    <!-- Navigation bar -->
+    <%- include("partials/nav") %>
+
+        <!-- Contains the web page document’s main content  -->
+        <main>
+            <section id="home" class="container-fluid m-0">
+                <h1>Track Your Health.<br>Transform Your Life.</h1>
+                <p>Simplify your health journey. Stay active, eat better, and never miss a beat. <br>FitWell helps you
+                    build
+                    healthy habits and stay on track—one step at a time.</p>
+                <% if (!isLoggedIn) { %>
+                    <button id="btn_get_started" class="btn rounded-pill text-white px-4 py-2 fw-bold">Get
+                        started</button>
+                    <% } %>
+            </section>
+
+            <section id="aboutUs" class="container">
+                <h2>About Us</h2>
+                <p>Our <span class="web_name">FitWell</span> web is built to help you take control of your well-being.
+                    From
+                    daily routines to long-term goals, we offer a simple and supportive space to guide your health
+                    journey.
+                    Whether you're just getting started or looking to stay consistent, this platform is your reliable
+                    companion
+                    — focused on helping you feel your best.</p>
+
+                <h2>Objectives</h2>
+                <div class="obj row p-3 my-4 align-items-center">
+                    <div class="col-md-2 text-center">
+                        <img src="/images/obj1.png" class="img-fluid">
+                    </div>
+                    <div class="col-md-10">
+                        <h4 class="fw-bold mt-3">Promote Overall Health & Wellness</h4>
+                        <p>Our goal is to provide users with the tools they need to lead a healthier and more balanced
+                            lifestyle.</p>
+                    </div>
+                </div>
+
+                <div class="obj row p-3 my-4 align-items-center">
+                    <div class="col-md-2 text-center">
+                        <img src="/images/obj2.png" class="img-fluid">
+                    </div>
+                    <div class="col-md-10">
+                        <h4 class="fw-bold mt-3">Promote Awareness & Accountability</h4>
+                        <p>Help users become more aware of their habits and progress, encouraging personal
+                            responsibility for
+                            well-being.</p>
+                    </div>
+                </div>
+
+                <div class="obj row p-3 my-4 align-items-center">
+                    <div class="col-md-2 text-center">
+                        <img src="/images/obj3.png" class="img-fluid">
+                    </div>
+                    <div class="col-md-10">
+                        <h4 class="fw-bold mt-3">Easy to Use, Anytime, Anywhere</h4>
+                        <p>A simple, intuitive web design means you can track your health anytime — whether you're at
+                            the gym,
+                            at home, or on the go.</p>
+                    </div>
+                </div>
+
+            </section>
+
+            <section id="features" class="container">
+                <h2>What We Provide</h2>
+                <div class="row justify-content-center g-5 mb-5">
+                    <div class="col-sm-6 col-lg-4 d-flex justify-content-center">
+                        <div class="card" data-link="/layout/FitnessTracker.html">
+                            <img src="/images/feature1.jpg" alt="fitness tracker" class="card-img-top img-fluid">
+                            <div class="card-body">
+                                <h4 class="card-title">Fitness Tracker</h4>
+                                <p class="card-text">Keep track of your physical activities by logging daily workouts,
+                                    steps,
+                                    and exercises. Each log includes duration, date, and time — helping you stay
+                                    consistent and
+                                    monitor your routines.</p>
+                                <button class="btn_feature">Log My Workout</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-sm-6 col-lg-4 d-flex justify-content-center">
+                        <div class="card" data-link="ProgressChart.html">
+                            <img src="/images/feature2.jpg" alt="fitness tracker" class="card-img-top img-fluid">
+                            <div class="card-body">
+                                <h4 class="card-title">Progress Charts</h4>
+                                <p class="card-text">Visualize your fitness journey with clear, easy-to-read graphs that
+                                    show
+                                    your improvements over time.</p>
+                                <button class="btn_feature">View My Progress Chart</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row justify-content-center g-5">
+                    <div class="col-sm-6 col-lg-4 d-flex justify-content-center">
+                        <div class="card" data-link="NutritionPlanner.html">
+                            <img src="/images/feature3.jpg" alt="fitness tracker" class="card-img-top img-fluid">
+                            <div class="card-body">
+                                <h4 class="card-title">Nutrition Planner</h4>
+                                <p class="card-text">Discover meal suggestions tailored to your health goals. Each meal
+                                    includes
+                                    nutritional information, and users can save meals as favorites for quick access
+                                    later.</p>
+                                <button class="btn_feature">Plan My Meal</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-sm-6 col-lg-4 d-flex justify-content-center">
+                        <div class="card" data-link="CreateReminder.html">
+                            <img src="/images/feature4.jpg" alt="fitness tracker" class="card-img-top img-fluid">
+                            <div class="card-body">
+                                <h4 class="card-title">Notification & Reminder</h4>
+                                <p class="card-text">Create personalized reminders for key daily routines like workouts,
+                                    meal
+                                    times, and water intake. Stay motivated and consistent with timely push
+                                    notifications that
+                                    help you stick to your health goals.</p>
+                                <button class="btn_feature">Set Reminder</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </section>
+        </main>
+
+        <!-- Footer -->
+        <%- include("partials/footer", {scriptFile:"LandingPage_script.js"}) %>

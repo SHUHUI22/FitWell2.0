@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Profile</title>
+  <!-- <link href="/styles/index.css" rel="stylesheet"> -->
+  <link href="/styles/index.css" rel="stylesheet">
+  <link href="/styles/Profile_style.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-SgOJa3DmI69IUzQ2PVdRZhwQ+dy64/BUtbMJw1MZ8t5HZApcHrRKUc4W0kG879m7" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body>
+
+<!-- Navigation Bar -->
+<nav class="navbar navbar-expand-lg py-1 px-4">
+  <div class="container-fluid d-flex align-items-center justify-content-between">
+    <!-- Web name and logo-->
+    <a href="/layout/LandingPage.html" class="web_name navbar-brand fw-bold d-flex align-items-center">
+      <img src="/images/logo.png" width="50px" height="50px" class="me-1" />
+      FitWell
+    </a>
+
+    <!-- Display hamburger icon when the screen is small-->
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarText" aria-controls="navbarText" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <!-- Nav items-->
+    <div class="collapse navbar-collapse" id="navbarText">
+      <ul class="navbar-nav text-nowrap ms-auto d-flex justify-content-evenly w-100">
+        <li class="nav-item" id="nav_home"><a href="/layout/LandingPage.html#home" class="nav-link fw-bold">Home</a></li>
+        <li class="nav-item" id="nav_aboutUs"><a href="/layout/LandingPage.html#aboutUs" class="nav-link fw-bold">About Us</a></li>
+        <li class="nav-item" id="nav_features"><a href="/layout/LandingPage.html#features" class="nav-link fw-bold">Features</a></li>
+        <li class="nav-item" id="nav_tracker"><a href="/layout/FitnessTracker.html" class="nav-link fw-bold">Fitness Tracker</a></li>
+        <li class="nav-item" id="nav_progress"><a href="/layout/ProgressChart.html" class="nav-link fw-bold">Progress Chart</a></li>
+        <li class="nav-item" id="nav_nutrition"><a href="/layout/NutritionPlanner.html" class="nav-link fw-bold">Nutrition Planner</a></li>
+        <li class="nav-item" id="nav_reminder"><a href="/layout/CreateReminder.html" class="nav-link fw-bold">Reminder</a></li>
+        <li class="nav-item dropdown" id="nav_profile">
+          <a href="#" class="nav-link dropdown-toggle fw-bold" role="button" data-bs-toggle="dropdown">
+            <i class="fas fa-user-circle"></i>
+          </a>
+          <ul class="dropdown-menu">
+            <li><a class="dropdown-item fw-bold" href="/layout/Profile.html">Profile</a></li>
+            <li><hr class="dropdown-divider" /></li>
+            <li><a class="dropdown-item fw-bold" href="/layout/LandingPage.html#logout" id="btn_logout">Log Out</a></li>
+          </ul>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<main>
+  <div class="container py-4">
+    <div class="profile-settings-wrapper">
+      <section class="profile">
+        <img src="/images/signup&login.jpg" alt="Profile Picture" class="avatar" id="profilePic"/>
+        <h2>Username</h2>
+        <div class="info-row"><span><strong>Email</strong></span><span>abc@gmail.com</span></div>
+        <div class="info-row"><span><strong>Age</strong></span><span>20</span></div>
+        <div class="info-row"><span><strong>Gender</strong></span><span>Male</span></div>
+        <div class="info-row"><span><strong>Height</strong></span><span>168</span></div>
+        <div class="info-row"><span><strong>Weight</strong></span><span>55</span></div>
+        <div class="info-row"><span><strong>Target Weight</strong></span><span>25</span></div>
+      </section>
+
+      <section class="settings">
+        <h2>Settings</h2>
+        <div class="setting-group">
+          <h3>Notification</h3>
+          <label class="toggle-switch">
+            <span>Workout</span>
+            <input type="checkbox" checked />
+            <span class="slider"></span>
+          </label>
+          <label class="toggle-switch">
+            <span>Meal</span>
+            <input type="checkbox" checked />
+            <span class="slider"></span>
+          </label>
+          <label class="toggle-switch">
+            <span>Water</span>
+            <input type="checkbox" checked />
+            <span class="slider"></span>
+          </label>
+        </div>
+        <hr />
+        <button id="changePassword" data-bs-toggle="modal" data-bs-target="#changePasswordModal">Change Password</button>
+        <button id="updateProfile" data-bs-toggle="modal" data-bs-target="#updateProfileModal">Update Profile</button>
+
+        <button id="deleteAccount" class="delete">Delete Account</button>
+      </section>
+    </div>
+  </div>
+
+  <!-- Change Password Modal -->
+<div class="modal fade" id="changePasswordModal" tabindex="-1" aria-labelledby="changePasswordLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="changePasswordLabel">Change Password</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form>
+          <div class="mb-3">
+            <label for="currentPassword" class="form-label">Current Password</label>
+            <input type="password" class="form-control" id="currentPassword" required>
+          </div>
+          <div class="mb-3">
+            <label for="newPassword" class="form-label">New Password</label>
+            <input type="password" class="form-control" id="newPassword" required>
+          </div>
+          <div id="newPasswordError" class="text-danger d-none">Password must contain at least 8 characters, including uppercase, lowercase, and a number.</div>
+          <div class="mb-3">
+            <label for="confirmPassword" class="form-label">Confirm New Password</label>
+            <input type="password" class="form-control" id="confirmPassword" required>
+          </div>
+          <div id="confirmNewPasswordError" class="text-danger d-none">Passwords do not match.</div>
+          <button type="submit" class="btn-primary" id="saveNewPassword">Update Password</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Update Profile Modal -->
+<div class="modal fade" id="updateProfileModal" tabindex="-1" aria-labelledby="updateProfileLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="updateProfileLabel">Update Profile</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form>
+          <div class="mb-3">
+            <img id="modalProfilePicPreview" src="" alt="Profile Picture" class="avatar" />
+          </div>
+          <div class="mb-3">
+            <label for="modalUsername" class="form-label">Username</label>
+            <input type="text" class="form-control" id="modalUsername">
+          </div>
+          <div class="mb-3">
+            <label for="modalEmail" class="form-label">Email</label>
+            <input type="email" class="form-control" id="modalEmail" disabled>
+          </div>
+          <div class="mb-3">
+            <label for="modalAge" class="form-label">Age</label>
+            <input type="number" class="form-control" id="modalAge">
+          </div>
+          <div class="mb-3">
+            <label for="modalGender" class="form-label">Gender</label>
+            <select id="modalGender" class="form-control">
+              <option>Male</option>
+              <option>Female</option>
+              <option>Prefer Not To Say</option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label for="modalHeight" class="form-label">Height (cm)</label>
+            <input type="number" step="0.01" class="form-control" id="modalHeight">
+          </div>
+          <div class="mb-3">
+            <label for="modalWeight" class="form-label">Weight (kg)</label>
+            <input type="number" step="0.1" class="form-control" id="modalWeight">
+          </div>
+          <div class="mb-3">
+            <label for="modalTargetWeight" class="form-label">Target Weight (kg)</label>
+            <input type="number" step="0.1" class="form-control" id="modalTargetWeight">
+          </div>
+          <div class="mb-3">
+            <label for="modalProfilePic" class="form-label">Profile Picture</label>
+            <input type="file" class="form-control" id="modalProfilePic" accept="image/*">
+          </div>
+          <button type="button" id="saveProfileChanges" class="btn-primary">Save Changes</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+</main>
+
+<!-- Footer -->
+<footer>
+  <div class="container py-4">
+    <div class="row g-2">
+      <div class="col-sm-4 align-items-center">
+        <h4>Fitwell</h4>
+        <p>
+          Your companion for a healthier, more balanced lifestyle. Track your progress, plan meals, and stay motivated—anytime, anywhere.
+        </p>
+      </div>
+      <div id="quick_link" class="col-sm-4 d-flex flex-column">
+        <h4>Quick Links</h4>
+        <a href="/layout/LandingPage.html#home">Home</a>
+        <a href="/layout/LandingPage.html#aboutUs">About Us</a>
+        <a href="/layout/LandingPage.html#features">Features</a>
+        <a href="/layout/FitnessTracker.html" id="quicklink_tracker" class="d-none">Fitness Tracker</a>
+        <a href="/layout/ProgressChart.html" id="quicklink_progress" class="d-none">Progress Chart</a>
+        <a href="/layout/NutritionPlanner.html" id="quicklink_nutrition" class="d-none">Nutrition Planner</a>
+        <a href="/layout/CreateReminder.html" id="quicklink_reminder" class="d-none">Reminder</a>
+      </div>
+      <div id="contact" class="col-sm-4 align-items-center justify-content-center">
+        <h4>Contact Us</h4>
+        <div class="d-flex flex-row">
+          <i class="fas fa-phone-alt me-3 pt-1"></i>
+          <a href="tel:0123456789">012-345 6789</a>
+        </div>
+        <div class="d-flex flex-row mt-3">
+          <i class="fas fa-envelope me-3 pt-1"></i>
+          <a href="mailto:fitwell@gmail.com">fitwell@gmail.com</a>
+        </div>
+      </div>
+    </div>
+    <hr />
+    <p class="text-center mb-0">Copyright © 2025 All right reserved to FitWell</p>
+  </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/js/bootstrap.bundle.min.js" integrity="sha384-k6d4wzSIapyDyv1kpU366/PK5hCdSbCRGRCMv+eplOQJWyd1fbcAu9OCUj5zNLiq" crossorigin="anonymous"></script>
+<script src="/script/Profile_script.js"></script>
+</body>
+</html>

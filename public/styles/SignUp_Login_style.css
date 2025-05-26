@@ -1,0 +1,173 @@
+* {
+    font-family: Calibri;
+}
+
+body{
+    width: 100%;
+}
+
+.container-fluid{
+    height: 100vh;    
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    display: flex;
+}
+
+#left_side{
+    background: url(/images/signup&login.jpg);
+    background-position: center;
+    background-size: cover;
+    height: 100%;
+    min-width: 40%;
+    transition: opacity 0.5s ease;
+    position: relative;
+}
+
+#name_and_logo{
+    display: flex;
+    align-items: center;
+    padding: 20px;
+}
+
+#logo{
+    height: 50px;
+    width: 50px;
+    margin-right: 10px;
+}
+
+#webname{
+    color: white;
+    font-weight: bold;
+    padding-top: 20px;
+}
+
+#hover_overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 100%;
+    background-color: rgba(0, 0, 0, 0.6); /* dim background */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transform: translateX(-100%);
+    transition: transform 0.5s ease;
+    z-index: 2;
+}
+
+#welcome_message {
+    background: linear-gradient(to right,#E4EFE7, #3E7B27);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    padding: 20px;
+    font-size: 3.5rem;
+    font-weight: bold;
+    opacity: 0;
+    transform: translateX(-50px);
+    transition: opacity 0.5s ease, transform 0.5s ease;
+}
+
+#right_side{
+    height: 100%;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-evenly;
+    padding: 10px;
+}
+
+form{
+    min-width: 70%;
+    max-width: 70%;
+    padding: 10px;
+}
+
+#right_side h1{
+    color: #123524;
+    text-align: center;
+    font-weight: bold;
+    margin: 20px 0;
+}
+
+input, select{
+    background-color: #E4EFE7 !important; 
+    color: #3E7B27 !important; 
+    margin-bottom: 20px;
+}
+
+#passwordError, #confirmPasswordError{
+    margin-top: 0;
+    margin-bottom: 20px;
+}
+
+input::placeholder{
+    color: #3E7B27 !important;
+    opacity: 0.7 !important;
+}
+
+select.placeholder_select:invalid {
+    color: #3E7B27;
+    opacity: 0.7;
+}
+
+.input-group .input-group-text {
+    background-color: #E4EFE7;
+    color: #3E7B27;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 12px;
+    height: 36px;
+}
+
+.input-group .form-control, .form-select {
+    max-height: 36px;
+}
+
+.input-group .fas {
+    font-size: 1rem;
+}
+
+#gender, form p{
+    color: #3E7B27
+}
+
+#btn_signup, #btn_login, #btn_send{
+    background-color: #123524;
+    color: white;
+    font-weight: bold;
+    margin: 10px 0;
+}
+
+#btn_signup:hover , #btn_login:hover, #btn_send:hover{
+    background-color: #3E7B27;
+}
+
+.link{
+    text-decoration: none;
+    color: #3E7B27;
+    font-weight: bold;
+}
+
+.link:hover{
+    color: #04AA6D;
+}
+
+@media (max-width: 768px) {
+    #left_side{
+        min-width: 35%;
+    }
+    #welcome_message {
+        padding: 8px;
+        font-size: 50px;
+    }
+}
+
+@media (max-width: 600px) {
+    #left_side{
+        display: none;
+    }
+}

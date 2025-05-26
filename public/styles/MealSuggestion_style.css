@@ -1,0 +1,75 @@
+main{
+    background-color: #E4EFE7;
+    min-height: 100vh;
+}
+
+main h2{
+    color: #123524;
+    font-weight: bold;
+    text-align: center;
+    font-size: 2.5rem;
+    margin: 20px 0;
+}
+
+#search-input, #filter, #btn-search {
+    border: 1px solid #3E7B27 !important;
+}
+
+#filter{
+    background-color: #FAF1E6;
+}
+
+#btn-search{
+    background-color: #123524;
+}
+
+#search-result{
+    padding-bottom: 30px !important;
+}
+
+.card{
+    border: 1px solid #3E7B27 !important;
+    transition: all 0.4s ease; 
+    padding: 10px !important;
+    margin: 20px auto 0 !important;
+    max-width: 800px;
+}
+
+#mealModal .modal-dialog {
+    max-width: 800px;
+    margin: auto;
+}
+
+#mealModal .modal-content {
+    max-height: 90vh;
+    /* Limit modal height to 90% of viewport height */
+    overflow: hidden;
+}
+
+#mealModal .modal-body {
+    overflow-y: auto;
+    max-height: 80vh;
+    /* Make body scrollable if content is too long */
+}
+
+.meal-title{
+    font-weight: bold; 
+    font-size: 1.5rem;
+    padding-bottom: 10px;
+}
+
+.meal-calorie, .meal-protein, .meal-fat{
+    font-size: 1.1rem;
+} 
+
+.card img{
+    margin: auto 10px;
+    width: 120px;
+    height: 100px;
+}
+
+.card:hover{
+    box-shadow: 0 0 15px #123524;
+    transform: scale(1.01);
+    cursor: pointer;
+}

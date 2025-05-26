@@ -1,0 +1,67 @@
+main{
+    background-color: #E4EFE7;
+    overflow: hidden; 
+    padding-bottom: 40px; 
+    min-height: 100vh;
+}
+
+body {
+    margin-bottom: 0;
+    padding: 0;
+    background-color: #E4EFE7; 
+}
+
+#activityHistory{
+    background-color: #FFFFFF;
+    border-radius: 20px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+    padding: 30px 15px;
+    margin-bottom: 40px;
+    margin-top: 35px;
+}
+
+.history-card{
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+}
+
+.history-card:hover{
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+}
+
+#btn_done{
+    background-color: #123524;
+    color: white;
+    font-weight: bold;
+    margin: 30px 0 20px;
+    
+}
+
+#btn_done:hover{
+    background-color: #3E7B27;
+}
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+  }
+  .modal-content {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    width: 300px;
+  }
+  .d-none {
+    display: none;
+  }
+
+footer{
+    margin-top: 0;
+    padding: 0;
+}

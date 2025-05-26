@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Fitneess Tracker</title>
+        <link href="/styles/FitnessTracker.css" rel="stylesheet">
+        <link href="/styles/index.css" rel="stylesheet"> 
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-SgOJa3DmI69IUzQ2PVdRZhwQ+dy64/BUtbMJw1MZ8t5HZApcHrRKUc4W0kG879m7" crossorigin="anonymous">
+        <!-- Font Awesome CDN -->
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    </head>
+
+    <body>
+
+        <!-- Navigation Bar -->
+        <nav class="navbar navbar-expand-lg py-1 px-4">
+            <div class="container-fluid d-flex align-items-center justify-content-between">
+                <!-- Web name and logo-->
+                 <a href="/layout/FitnessTracker.html" class="web_name navbar-brand fw-bold d-flex align-items-center">
+                    <img src="/images/logo.png" width="50px" height="50px" class="me-1">
+                    FitWell
+                 </a>
+
+                 <!-- Display hambuger icon when the screen is small-->
+                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarText" aria-controls="navbarText" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                 </button> 
+
+                 <!-- Nav items-->
+                 <div class="collapse navbar-collapse" id="navbarText">
+                    <ul class="navbar-nav text-nowrap ms-auto d-flex justify-content-evenly w-100">
+                        <li class="nav-item" id="nav_home">
+                            <a href="/layout/LandingPage.html#home" class="nav-link fw-bold">Home</a>
+                        </li>
+                        <li class="nav-item" id="nav_aboutUs">
+                            <a href="/layout/LandingPage.html#aboutUs" class="nav-link fw-bold">About Us</a>
+                        </li>
+                        <li class="nav-item" id="nav_features">
+                            <a href="/layout/LandingPage.html#features" class="nav-link fw-bold">Features</a>
+                        </li>
+                        <li class="nav-item" id="nav_tracker">
+                            <a href="/layout/FitnessTracker.html" class="nav-link fw-bold">Fitness Tracker</a>
+                        </li>
+                        <li class="nav-item" id="nav_progress">
+                            <a href="/layout/ProgressChart.html" class="nav-link fw-bold">Progress Chart</a>
+                        </li>
+                        <li class="nav-item" id="nav_nutrition">
+                            <a href="/layout/NutritionPlanner.html" class="nav-link fw-bold">Nutrition Planner</a>
+                        </li>
+                        <li class="nav-item" id="nav_reminder">
+                            <a href="/layout/CreateReminder.html" class="nav-link fw-bold">Reminder</a>
+                        </li>
+                        <li class="nav-item dropdown" id="nav_profile">
+                            <a href="#" class="nav-link dropdown-toggle fw-bold" role="button" data-bs-toggle="dropdown">
+                                <i class="fas fa-user-circle"></i>
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item fw-bold" href="/layout/Profile.html">Profile</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item fw-bold" href="#logout" id="btn_logout">Log Out</a></li>
+                            </ul>
+                        </li>
+                    </ul>
+
+                 </div> 
+            </div>
+        </nav>
+
+        <!-- Contains the web page document’s main content  -->
+        <main id="FitnessTracker">
+            <div class="container py-2"> 
+                <div class="row">
+                    <div class="col-md-5 mb-4">
+                    <!-- Log Workout -->
+                    <section id="logWork" class="container">
+                     <h2 class="fw-bold mb-4">Log Workout</h2>
+
+                    <form id="logWorkout_form"
+                     method="post">
+                    <div class="input-log ">
+                         <label for="workoutType" >Workout Type</label><br>
+                         <select id="workoutType">
+                             <option selected ="cycling" value="cycling">Cycling</option>
+                             <option value="running">Running</option>
+                             <option value="aerobic">Aerobic</option>
+                             <option value="yoga">Yoga</option>
+                             <option value="zumba">Zumba</option>
+                         </select>
+                    </div>
+                    <div class="input-log">
+                         <label for="duration">Duration</label><br>
+                         <input id="duration" type="number" placeholder="in minutes" required>
+                    </div>
+                    <div>
+                         <label for="date">Date</label><br>
+                         <input id="date" type="datetime-local">
+                    </div>
+                    <div class="input-log">
+                        <label for="workoutDetail">Workout Detail</label><br>
+                        <input id="workoutDetail" type="text" placeholder="Distance (in km)" required>
+                    </div>
+
+                    <div>
+                         <button id="btn_record" form="logWorkout_form" 
+                         class="btn btn-lg px-5 mx-auto d-block border border-2 rounded-pill">
+                         Record</button>
+                    </div>   
+                    </form>
+                    </section>
+                </div>
+                
+                <div class="col-md-7">
+                    <div class="row px-4">
+                         <div class="col-md-12">
+                             <!-- Today's Summary -->
+                             <section id="todaySummary" class="container my-4">
+                             <h2 class="fw-bold mb-4">Today's Summary</h2>
+                             <div class="summary_content">
+                                 
+                            <!--Circular Steps Ring-->
+                            <div class="streak-container position-relative">
+                                <svg class="streak-ring" width="140" height="140">
+                                  <circle class="streak-bg" cx="70" cy="70" r="60" 
+                                  stroke="#99BC85" stroke-width="12" fill="none"/>
+                                  <circle class="streak-progress" cx="70" cy="70" r="60"
+                                  stroke="#123524" stroke-width="12" fill="none"
+                                  stroke-linecap="round"
+                                  stroke-dasharray="376.99" stroke-dashoffset="94.25" />
+                                </svg>
+
+                                <!-- Center content -->
+                                <div class="streak-content position-absolute top-50 start-50 translate-middle text-center">
+                                    <p id="stepCount" class="current-step fw-bold mt-2 mb-1">6800</p>
+                                    <large class="large text-muted mt-1">steps</large>
+                                    <div class="step-goal text-muted mb-2" id="goalValue">Goal : 10000</div>
+                                </div>
+                            </div>    
+                                  
+                            <div class="d-flex flex-column mt-2 pe-5 me-4">                      
+                                <div class="row-md-4">
+                                    <div class="summary-icon mb-3">
+                                        <i class="fas fa-location-dot me-2"></i> <span> 5.2 km</span>
+                                    </div>
+                                </div>
+                                <div class="row-md-4">
+                                    <div class="summary-icon mb-3">
+                                        <i class="fas fa-fire me-1"></i> <span>350 kcal</span>
+                                    </div>
+                                </div>
+                                <div class="row-md-4">
+                                    <div class="summary-icon">
+                                        <i class="fas fa-stopwatch me-2"></i> <span>40 min</span>
+                                    </div>
+                                </div>                             
+                            </div> 
+                            <div class="mt-4">
+                                <label for="stepGoal" class="form-label fw-semibold">Daily Step Goal</label>
+                                <input id="stepGoal" type="number" class="form-control" placeholder="Enter your step goal (e.g., 10000)" min="1000"/>
+                                <button id="btn-set-goal" class="btn btn-lg px-5 mx-auto d-block border border-2 rounded-pill">Set Goal</button>
+                            </div>                        
+                            </div>
+                            </section>
+                         <div class="col-md-12 mt-4">
+                             <!-- Activity History -->
+                             <section id="activityHistory" class="container my-3">
+                             <h2 class="fw-bold mb-4">Activity History 
+                                <a id="btn-view-more" href="/layout/History.html" class=" btn-sm text-decoration-none">
+                                    <i class="fas fa-chevron-right fs-5"></i>
+                                </a></h2>
+                                           
+                             <div class="history-item">
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-person-biking history-icon"></i>
+                                    <div>16 Apr <br> Cycle</div>   
+                                </div>
+                                <bigger class="fw-bold align-items-center">15.2 km</bigger>
+                                <div class="text-end">
+                                  <div>45 min</div>
+                                  <div>411 kcal</div>
+                                </div>
+                              </div>
+                              <div class="history-item">
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-person-praying history-icon"></i>
+                                    <div>15 Apr <br> Yoga</div>                          
+                                </div>
+                                <bigger class="fw-bold align-items-center">Vinyasa</bigger>
+                                <div class="text-end">
+                                  <div>30 min</div>
+                                  <div>87 kcal</div>
+                                </div>
+                             </section>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            </div>
+        </main>
+
+         <!-- Contains the web page document’s footer information  -->
+        <footer>
+        <div class="container py-4">
+            <div class="row g-2">
+                <div class="col-sm-4 align-items-center">
+                    <h4>Fitwell</h4>
+                    <p>Your companion for a healthier, more balanced lifestyle. Track your progress, plan meals, and stay motivated—anytime, anywhere.</p>
+                </div>
+                <div id="quick_link" class="col-sm-4 d-flex flex-column">
+                    <h4>Quick Links</h4>
+                    <a href="/layout/LandingPage.html#home">Home</a>
+                    <a href="/layout/LandingPage.html#aboutUs">About Us</a>
+                    <a href="/layout/LandingPage.html#features">Features</a>
+                    <a href="/layout/FitnessTracker.html" id="quicklink_tracker">Fitness Tracker</a>
+                    <a href="/layout/ProgressChart.html" id="quicklink_progress">Progress Chart</a>
+                    <a href="/layout/NutritionPlanner.html" id="quicklink_nutrition">Nutrition Planner</a>
+                    <a href="" id="quicklink_reminder">Reminder</a>
+                </div>
+                <div id="contact" class="col-sm-4 align-items-center justify-content-center">
+                    <h4>Contact Us</h4>
+                    <div class="d-flex flex-row">
+                        <i class="fas fa-phone-alt me-3 pt-1"></i>
+                        <a href="tel:0123456789">012-345 6789</a>
+                    </div>
+                    <div class="d-flex flex-row mt-3">
+                        <i class="fas fa-envelope me-3 pt-1"></i>
+                        <a href="mailto:fitwell@gmail.com">fitwell@gmail.com</a>
+                    </div>
+                </div>
+            </div>
+            <hr>
+            <p class="text-center mb-0">Copyright © 2025 All right reserved to FitWell</p>
+        </div>
+    </footer>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/js/bootstrap.bundle.min.js" integrity="sha384-k6d4wzSIapyDyv1kpU366/PK5hCdSbCRGRCMv+eplOQJWyd1fbcAu9OCUj5zNLiq" crossorigin="anonymous"></script>
+    <script type="text/javascript" src="/script/FitnessTracker_script.js"></script>    
+    </body>
+</html>

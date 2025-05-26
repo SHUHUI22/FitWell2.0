@@ -1,0 +1,68 @@
+<!-- Navigation Bar -->
+<nav class="navbar navbar-expand-lg py-1 px-4">
+    <div class="container-fluid d-flex align-items-center justify-content-between">
+
+        <!-- Web name and logo-->
+        <a href="/FitWell" class="web_name navbar-brand fw-bold d-flex align-items-center">
+            <img src="/images/logo.png" width="50px" height="50px" class="me-1">
+            FitWell
+        </a>
+
+        <!-- Display hamburger icon when the screen is small-->
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarText"
+            aria-controls="navbarText" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <!-- Nav items-->
+        <div class="collapse navbar-collapse navbar-collapse" id="navbarText">
+            <ul class="navbar-nav text-nowrap ms-auto d-flex justify-content-evenly w-100">
+                <li class="nav-item" id="nav_home">
+                    <a href="#home" class="nav-link active fw-bold">Home</a>
+                </li>
+
+                <li class="nav-item" id="nav_aboutUs">
+                    <a href="#aboutUs" class="nav-link fw-bold">About Us</a>
+                </li>
+                <li class="nav-item" id="nav_features">
+                    <a href="#features" class="nav-link fw-bold">Features</a>
+                </li>
+
+                <!-- Hidden Nav items, will appear after logged in -->
+                <% if (isLoggedIn) { %>
+                    <li class="nav-item" id="nav_tracker">
+                        <a href="FitnessTracker.html" class="nav-link fw-bold">Fitness Tracker</a>
+                    </li>
+                    <li class="nav-item" id="nav_progress">
+                        <a href="/layout/ProgressChart.html" class="nav-link fw-bold">Progress Chart</a>
+                    </li>
+                    <li class="nav-item" id="nav_nutrition">
+                        <a href="/layout/NutritionPlanner.html" class="nav-link fw-bold">Nutrition Planner</a>
+                    </li>
+                    <li class="nav-item" id="nav_reminder">
+                        <a href="/layout/CreateReminder.html" class="nav-link fw-bold">Reminder</a>
+                    </li>
+                    <li class="nav-item dropdown" id="nav_profile">
+                        <a href="#" class="nav-link dropdown-toggle fw-bold" role="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-user-circle"></i>
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item fw-bold" href="/layout/Profile.html">Profile</a></li>
+                            <li>
+                                <hr class="dropdown-divider">
+                            </li>
+                            <li><a class="dropdown-item fw-bold" href="/FitWell/Logout" id="btn_logout">Log Out</a></li>
+                        </ul>
+                    </li>
+            </ul>
+            <% } else { %>
+                </ul>
+                <div class="ms-auto text-nowrap">
+                    <button id="btn_login" class="btn px-4 fw-bold border border-2 rounded-pill">Log In</button>
+                    <button id="btn_signup" class="btn px-4 fw-bold text-white rounded-pill ms-4">Sign Up</button>
+                </div>
+                <% } %>
+        </div>
+    </div>
+
+</nav>

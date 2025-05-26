@@ -1,0 +1,153 @@
+main{
+    padding-top: 68px;
+    background-color: #E4EFE7
+}
+
+#logWork{
+    background-color:#FFFFFF;
+    border-radius: 20px;
+    padding: 30px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+    margin-bottom: 30px;
+    margin-top: 25px;
+    max-width: 400px;
+}
+
+#logWork input, #logWork select{
+    width: 90%;
+    padding: 8px 12px;
+    margin: 10px 0 20px;
+    border: none;
+    border-radius: 10px;
+    background-color: #E4EFE7;
+    box-shadow: 0px 2px 5px#95be86;
+    justify-content: space-between;
+}
+
+.input-log .input-log-text {
+    background-color: #E4EFE7;
+    color: #3E7B27;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 12px;
+    max-height: 36px;
+}
+
+.input-log .form-control, .form-select {
+    max-height: 36px;
+}
+
+.input-log .fas {
+    font-size: 1rem;
+}
+
+#btn_record, #btn-set-goal{
+    background-color: #123524;
+    color: white;
+    font-weight: bold;
+    margin: 20px 0 10px;
+}
+
+#btn_record:hover, #btn-set-goal:hover{
+    background-color: #3E7B27;
+}
+
+#btn-view-more{
+    float: right;
+}
+
+#todaySummary{
+    background-color: #FFFFFF;
+    border-radius: 20px;
+    padding: 30px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+    max-width: 600px;
+}
+
+.summary_content {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-around;
+    text-align: center;
+    gap: 20px;
+}
+
+.summary-icon i,
+.history-icon {
+  color: #000000;
+  font-size: 1.1rem;
+}
+
+#stepGoal {
+    width: 100%;
+    max-width: 250px;
+    background-color: #E4EFE7;
+    border-radius: 8px;
+    border: none;
+    padding: 6px 12px;
+    box-shadow: 0px 2px 5px #95be86;
+}
+
+.step-goal {
+    font-size: 0.8rem;
+    margin-top: -2px;
+    color: #3E7B27;
+}
+
+
+.current-step{
+    font-size: 1.9rem;
+}
+
+.streak-ring {
+    transform: rotate(-90deg); /* So progress starts from top */
+}
+  
+.streak-container {
+    width: 140px;
+    height: 140px;
+    position: relative;
+}
+  
+.streak-content {
+    pointer-events: none;
+}
+  
+
+#activityHistory{
+    background-color: #FFFFFF;
+    border-radius: 20px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+    max-width: 600px;
+    padding: 30px;
+}
+
+#btn-view-more{
+    color: #000000;
+}
+
+#btn-view-more:hover{
+    color: #6b6868;
+}
+
+.history-icon{
+    font-size: 1.2rem;
+    margin-right: 10px;
+}
+
+.history-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border: 1px solid #ddd;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+    padding: 12px;
+    border-radius: 12px;
+    margin-bottom: 10px;
+}
+
+.text-center {
+    text-align: center;
+}

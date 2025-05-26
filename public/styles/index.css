@@ -1,0 +1,174 @@
+/* For nav bar, footer, responsive style*/
+
+* {
+    font-family: Calibri;
+}
+
+html {
+    scroll-behavior: smooth;
+    scroll-padding-top: 68px;
+}
+
+body{
+    width: 100%;
+}
+
+nav{
+    position: fixed !important; 
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 999;
+    background-color: #efe3c3;
+}
+
+.dropdown-menu{
+    background-color: #efe3c3 !important;
+}
+
+.dropdown-item:hover,
+.dropdown-item:active{
+    color: #3E7B27 !important; 
+    background-color: rgba(62, 123, 39, 0.1) !important;
+}
+
+.web_name{
+    color: #3E7B27 !important; 
+    font-weight: bold;
+}
+
+.nav-link, .dropdown-item{
+    color: #123524 !important; 
+}
+
+.nav-link:hover,
+.nav-link.active
+{
+    color: #3E7B27 !important; 
+}
+
+#btn_login{
+    border-color: #123524 !important;
+}
+
+#btn_signup{
+    background-color: #123524;
+}
+
+#btn_login:hover, #btn_signup:hover {
+    box-shadow: 0 6px 12px #1235244d;
+    transform: translateY(-2px);
+}
+
+#nav_profile .fas{
+    font-size: 1.7rem;
+}
+
+main{
+    padding-top: 68px;
+}
+
+footer{
+    background-color: #123524;
+    color: white;
+}
+
+footer h4{
+    font-weight: bold;
+}
+
+footer a{
+    color: #04AA6D;
+    text-decoration: none;
+}
+
+footer a:hover{
+    color: #3E7B27;
+}
+
+footer img{
+    width: 40px;
+    height: 40px;
+}
+
+
+/* Responsive Styles */
+@media (max-width: 2000px){
+    #quick_link, #contact{
+        padding-left: 100px;
+        text-wrap: nowrap;
+    }
+}
+
+@media (max-width: 1020px) {
+    #home h1 {
+        font-size: 3.6rem;
+        padding: 90px 80px;
+    }
+
+    #home p {
+        font-size: 1.4rem;
+    }
+}
+
+@media (max-width: 750px) {
+    #home h1 {
+        font-size: 3.4rem;
+        padding: 80px 80px;
+    }
+
+    #home p {
+        font-size: 1.25rem;
+    }
+
+    #quick_link{
+        padding-left: 30px;
+    }
+
+    #contact{
+        padding-left: 5px;
+    }
+
+}
+
+@media (max-width: 650px) {
+    #home h1 {
+        font-size: 2.5rem;
+        padding: 70px 45px;
+    }
+
+    #home p {
+        font-size: 1.25rem;
+        padding: 0 45px;
+    }
+
+    #btn_get_started{
+        margin-left: 45px;
+        position: absolute;
+        bottom: 50px;
+    }
+}
+
+@media (max-width: 576px) {
+    #home h1 {
+        font-size: 2.5rem !important;
+        padding: 70px 45px ;
+    }
+
+    #home p {
+        font-size: 1.25rem !important;
+        padding: 0 45px;
+    }
+    
+    html {
+        scroll-padding-top: 227px;
+    }
+    
+    #quick_link{
+        padding-left: 5px;
+    }
+
+    #contact h4{
+        padding-top: 10px;
+    }
+}

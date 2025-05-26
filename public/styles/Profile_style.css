@@ -1,0 +1,222 @@
+.navbar-toggler{
+  width: 55.6px;  /* Small size for burger icon */
+  height: 39.6px;
+}
+
+
+body {
+  margin: 0;
+  font-family: 'Open Sans', sans-serif;
+  font-weight: bold;
+  background-color: #e6f0e8;
+  color: #1d3b20;
+}
+
+.profile-icon img {
+  width: 35px;
+  height: 35px;
+  border-radius: 50%;
+}
+
+main {
+  display: flex;
+  justify-content: center;
+  padding: 2 2rem;
+  background-color: #E4EFE7;
+}
+
+.profile-settings-wrapper {
+  display: flex;
+  justify-content: space-between;
+  gap: 2rem;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.profile, .settings {
+  background-color: #ffffff;
+  border-radius: 10px;
+  padding: 2rem 2rem 1rem;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  width: 48%;
+}
+
+.avatar {
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  object-fit: cover;
+  display: block;
+  margin: 0 auto 20px auto;
+}
+
+.profile h2, .settings h2 {
+  text-align: center;
+  color: #3E7B27;
+  font-weight: bold;
+  margin-bottom: 3rem;
+}
+
+.profile p {
+  color: #123524;
+}
+
+.info-row {
+  display: flex;
+  justify-content: space-between;
+  margin: 1.5rem 0;
+  color: #123524;
+}
+
+.info-row span:first-child {
+  text-align: left;
+}
+
+.info-row span:last-child {
+  text-align: right;
+}
+
+.setting-group {
+  margin: 1rem 0;
+}
+
+.settings h3 {
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+label {
+  display: flex;
+  justify-content: space-between;
+  margin: 0.5rem 0;
+}
+
+.toggle-switch {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 20px;
+  margin: 1.5rem 0;
+  position: relative;
+}
+
+.toggle-switch input[type="checkbox"] {
+  display: none;
+}
+
+.toggle-switch .slider {
+  position: relative;
+  width: 45px;
+  height: 24px;
+  background-color: #ccc;
+  border-radius: 34px;
+  cursor: pointer;
+  transition: 0.3s; 
+}
+
+.toggle-switch .slider::before {
+  content: "";
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  left: 2px;
+  top: 2px;
+  background-color: white;
+  border-radius: 50%;
+  transition: 0.3s;
+}
+
+.toggle-switch input:checked + .slider {
+  background-color: #3E7B27;
+}
+
+.toggle-switch input:checked + .slider::before {
+  transform: translateX(21px);
+}
+
+button {
+  width: 100%;
+  padding: 0.75rem;
+  margin-top: 1rem;
+  border: none;
+  color: white;
+  cursor: pointer;
+}
+
+button#changePassword {
+  border-radius: 30px;
+  background-color: #3E7B27;
+  margin-top: 20px;
+}
+
+button#updateProfile {
+  border-radius: 30px;
+  background-color: #3E7B27;
+  margin-top: 20px;
+}
+
+button.delete {
+  background-color: #ba2a20;
+  border-radius: 30px;
+  margin-top: 20px;
+}
+
+.modal-dialog {
+  max-width: 500px;
+  margin: 30px auto;
+}
+
+.modal-content {
+  background-color: #ffffff;
+  border-radius: 15px;
+  padding: 2rem;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  max-height: 90vh;
+  overflow: hidden;
+}
+
+.modal-header {
+  border-bottom: none;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.modal-title {
+  font-size: 1.5rem;
+  color: #3E7B27;
+}
+
+.modal-body {
+  padding-top: 1rem;
+  overflow-y: auto;
+  flex-grow: 1;
+}
+
+.form-label {
+  font-size: 1rem;
+  color: #123524;
+}
+
+.btn-primary {
+  background-color: #3E7B27;
+  border: none;
+  border-radius:30px;
+  margin-top: 2rem;
+}
+
+/* Error message styling */
+.error-message {
+  color: red;
+  font-size: 0.85rem;
+  margin-top: 5px;
+}
+
+.d-none {
+  display: none;
+}
+
+body:not(.modal-open) {
+  overflow: auto !important;
+}

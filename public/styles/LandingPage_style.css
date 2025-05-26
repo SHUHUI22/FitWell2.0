@@ -1,0 +1,171 @@
+#home{
+    position: relative;
+    background-image: url(/images/home.jpg);
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: right;
+    min-height: 100vh;
+    width: 100%;
+    align-items: left;
+    text-align: left;
+    display: flex;
+    flex-direction: column;
+    z-index: 0;
+}
+
+#home::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.3); /* Adjust darkness */
+    z-index: -1;
+}
+
+#home h1{
+    font-weight: bold;
+    padding: 100px 80px;
+    font-size: 3.75rem;
+    text-wrap: nowrap;
+    background: linear-gradient(to right,#E4EFE7, #3E7B27);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+#home p{
+    padding: 0 80px;
+    font-size: 1.56rem;
+    color: #E4EFE7; 
+}
+
+#btn_get_started{
+    position: absolute;
+    bottom: 35px;
+    margin: 80px 80px;
+    font-size: 1.25rem;
+    background-color: #04AA6D; 
+    box-shadow: 0 7px #E4EFE7;
+    transition: transform 0.3s ease;
+
+}
+
+#btn_get_started:hover {
+    background-color: #3E7B27;
+}
+
+#btn_get_started:active {
+    transform: translateY(4px);
+    box-shadow: 0 3px #E4EFE7;
+}
+
+#aboutUs{
+    background-color: #FAF1E6;
+    max-width: 100%;
+    padding: 50px 80px;
+}
+
+#aboutUs h2, #features h2{
+    color: #3E7B27;
+    font-weight: bold;
+    text-align: center;
+    font-size: 2.5rem;
+    margin-bottom: 20px;
+}
+
+#aboutUs h2:nth-of-type(2){
+    margin-top: 30px;
+}
+
+#aboutUs p, #features .card{
+    font-size: 1.2rem;
+}
+
+#aboutUs img{
+    max-height: 110px; 
+    margin: auto;   /* Centers image inside the column */
+}
+
+.obj{
+    border: 2px solid #85A947 !important;
+    border-radius: 0.8rem;
+    transition: box-shadow 0.4s ease;
+}
+
+.obj:hover {
+    box-shadow: 0 0 15px #85A94780;
+}
+
+#features{
+    max-width: 100%;
+    background-color: #E4EFE7;
+    padding: 50px 80px;
+}
+
+#features img{
+    max-height: 270px; 
+    min-height: 270px;
+    max-width: 100%; 
+    border-bottom: 2px solid #3E7B27;
+    border-bottom-left-radius: 10%;
+    border-bottom-right-radius: 10%;
+}
+
+#features .card{
+    height: 100%;
+    max-width: 350px;
+    border: 2px solid #3E7B27;
+    background-color: #FAF1E6;
+    transition: all 0.4s ease; 
+    position: relative; 
+    display: flex;
+    flex-direction: column;
+}
+
+ /* new */
+#features .card-body {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+}
+
+#features .card-text {
+    flex-grow: 1; /* Push the button down */
+}
+
+#features .card-title{
+    color: #123524;
+    font-weight: bold;
+}
+
+.logged-in #features .card:hover{
+    box-shadow: 0 0 15px #123524;
+    transform: scale(1.02);
+}
+
+.btn_feature {
+    opacity: 0;
+    transition: opacity 0.3s ease, transform 0.2s ease;
+    margin: 10px 0;
+    padding: 12px 20px;
+    background-color: #123524;
+    color: white;
+    border: none;
+    border-radius: 20px;
+    cursor: pointer;
+    align-self: center;
+    transform: translateY(20px);
+}
+
+/* Show button on hover */
+.logged-in #features .card:hover .btn_feature {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.btn_feature:hover{
+    background-color: #3E7B27;
+}
+
+.btn_feature:active {
+    background-color: #04AA6D; 
+    box-shadow: 0 0 8px rgba(0,0,0,0.2); 
+}

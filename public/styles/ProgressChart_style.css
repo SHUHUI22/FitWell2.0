@@ -1,0 +1,431 @@
+main {
+    padding-top: 68px;
+    padding-bottom: 68px;
+    background-color: #E4EFE7;
+}
+
+.welcomeUser {
+    padding: 50px;
+    padding-top: 30px;
+    padding-bottom: 0px;
+    font-weight: bold;
+    color: #000000;
+}
+
+.container-header {
+    padding: 0 10px;
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #000000;
+}
+
+/* same as p-4, used for centering the streak wrapper*/
+.custom-padding {
+    padding: 1.5rem !important; 
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+
+/* Container for streak info and ring */
+.streak-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 1rem;
+  max-width: 100%;
+}
+
+/* Text Column */
+.streak-text {
+  display: flex;
+  flex-direction: column;
+  justify-content: center; /* Vertical alignment */
+  align-items: center; /* Horizontal alignment */
+  margin-right: 1.5rem;
+  min-width: 100px;
+}
+
+#noDays {
+  font-size: 5rem;
+  font-weight: bold;
+  color: #123524;
+  line-height: 1;
+  margin-bottom: 0;
+}
+
+#days {
+  font-size: 2.5rem;
+  letter-spacing: 0.5rem;
+  font-style: italic;
+  color: #123524;
+  margin: 0;
+  line-height: 1;
+}
+
+#noDays, #days {
+    text-align: center;
+    width: 100%; /* Ensures the text spans the full width of parent */
+  }
+
+/* Ring Column */
+.streak-container {
+  position: relative;
+  width: 200px;
+  height: 200px;
+  aspect-ratio: 1 / 1;;
+  flex-shrink: 0;
+  border-radius: 50%;
+}
+
+.streak-ring-wrapper {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+}
+
+.streak-ring {
+  transform: rotate(-90deg);
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.streak-bg,
+.streak-progress {
+  fill: none;
+  stroke-width: 10;
+}
+
+.streak-bg {
+  stroke: #123524;
+}
+
+.streak-progress {
+  stroke: #99BC85;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 0.5s ease;
+}
+
+.streak-content {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 70%;
+  height: 70%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.streak-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* Media queries for responsiveness */
+@media (max-width: 1200px) {
+  .streak-container {
+    width: 180px;
+    height: 180px;
+  }
+  
+  #noDays {
+    font-size: 4.5rem;
+  }
+  
+  #days {
+    font-size: 2.2rem;
+    letter-spacing: 0.4rem;
+  }
+}
+
+@media (max-width: 992px) {
+  .streak-container {
+    width: 160px;
+    height: 160px;
+  }
+  
+  #noDays {
+    font-size: 4rem;
+  }
+  
+  #days {
+    font-size: 2rem;
+    letter-spacing: 0.3rem;
+  }
+  
+  .streak-text {
+    margin-right: 1rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .streak-wrapper {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .streak-text {
+    align-items: center;
+    margin-right: 0;
+    margin-bottom: 1rem;
+  }
+  
+  .streak-container {
+    width: 150px;
+    height: 150px;
+  }
+  
+  #noDays {
+    font-size: 3.5rem;
+  }
+  
+  #days {
+    font-size: 1.8rem;
+    letter-spacing: 0.2rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .streak-container {
+    width: 130px;
+    height: 130px;
+  }
+  
+  #noDays {
+    font-size: 3rem;
+  }
+  
+  #days {
+    font-size: 1.5rem;
+    letter-spacing: 0.1rem;
+  }
+}
+
+/* High DPI screens - additional adjustment for zoom */
+@media screen and (min-resolution: 120dpi) {
+  .streak-wrapper {
+    transform: scale(0.95);
+    transform-origin: center center;
+  }
+}
+
+@media screen and (min-resolution: 144dpi) {
+  .streak-wrapper {
+    transform: scale(0.9);
+    transform-origin: center center;
+  }
+}
+
+.info {
+    color: #123524;
+    text-align: center;
+}
+
+#info-header {
+    font-size: 1.5rem;
+    font-weight: 700;
+}
+
+#info-value {
+    font-size: 1.2rem;
+    font-weight: lighter;
+}
+
+.bmi {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #123524;
+}
+
+#bmi-value {
+    font-size: 2.5rem;
+    font-weight: bold;
+    color: #3E7B27;
+}
+
+#bmi-status {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: #123524;
+}
+
+.bmi-bar {
+    height: 20px;
+    border-radius: 10px;
+    background: linear-gradient(
+        to right,
+        #B5D4F1,
+        #81E5DB,
+        #E8D284,
+        #E2798E
+    );
+    position: relative;
+}
+
+/* Ensure nothing overflows */
+.bg-white {
+    overflow: hidden;
+}
+
+/* Chart container for responsive charts */
+.chart-container {
+    position: relative;
+    height: 100%;
+    width: 100%;
+    min-height: 250px;
+}
+
+/* Ensure charts maintain minimum height on small screens */
+canvas {
+    min-height: 250px;
+}
+
+/* BMI indicator styling */
+#bmi-indicator {
+    position: absolute !important;
+    transform: translateX(-50%);
+    top: -25px !important;
+    transition: left 0.3s ease;
+}
+
+/* Media queries for responsive adjustments */
+@media (max-width: 1200px) {
+    #noDays {
+        font-size: 4.5rem;
+    }
+
+    #days {
+        font-size: 2.2rem;
+        letter-spacing: 0.9rem;
+    }
+
+    .container-header {
+        font-size: 1.3rem;
+    }
+
+    .p-4 {
+        padding: 1.25rem !important;
+    }
+}
+
+@media (max-width: 992px) {
+    #noDays {
+        font-size: 4rem;
+    }
+
+    #days {
+        font-size: 2rem;
+        letter-spacing: 0.8rem;
+    }
+
+    .container-header {
+        font-size: 1.3rem;
+    }
+
+    .p-4 {
+        padding: 1.25rem !important;
+    }
+}
+
+@media (max-width: 768px) {
+    #noDays {
+        font-size: 3.5rem;
+    }
+
+    #days {
+        font-size: 1.8rem;
+        letter-spacing: 0.6rem;
+    }
+
+    main {
+        padding-top: 40px;
+        padding-bottom: 40px;
+    }
+
+    .welcomeUser {
+        padding: 20px;
+        padding-bottom: 0px;
+        font-size: 2rem;
+    }
+
+    .row {
+        padding: 0 20px !important;
+    }
+
+    .p-4 {
+        padding: 1rem !important;
+    }
+
+    .container-header {
+        font-size: 1.2rem;
+    }
+
+    .bmi {
+        font-size: 1.2rem;
+    }
+
+    #bmi-value {
+        font-size: 2rem;
+    }
+
+    #bmi-indicator {
+        width: 14px;
+        height: 14px;
+        top: -20px !important;
+    }
+
+    .bmi-status {
+        font-size: 1rem;
+        padding: 0.5rem 0.25rem !important;
+    }
+}
+
+@media (max-width: 576px) {
+    #noDays {
+        font-size: 3rem;
+    }
+
+    #days {
+        font-size: 1.5rem;
+        letter-spacing: 0.4rem;
+    }
+
+    .welcomeUser {
+        padding: 15px;
+        font-size: 1.8rem;
+    }
+
+    .container-header {
+        font-size: 1.1rem;
+    }
+
+    .info {
+        font-size: 0.9rem;
+    }
+
+    #info-header {
+        font-size: 1.2rem;
+    }
+
+    #info-value {
+        font-size: 1rem;
+    }
+
+    .chart-container {
+        min-height: 200px;
+    }
+
+    canvas {
+        min-height: 200px;
+    }
+}
+
