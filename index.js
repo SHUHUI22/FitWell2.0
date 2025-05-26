@@ -1,7 +1,7 @@
-const express = require("express"); // Use require(‘express’) to import the Express module.
-const app = express();              // Call express() to create an Express application instance.
+const express = require("express"); // Use require(‘express’) to import the Express module
+const app = express();              // Call express() to create an Express application instance
 const port = 3000;                  // Define the port for the application
-const path = require("path");       //include Path module to work with directories and file paths.
+const path = require("path");       //include Path module to work with directories and file paths
 
 // Connect to database and start the server
 const mongoose = require("mongoose");
