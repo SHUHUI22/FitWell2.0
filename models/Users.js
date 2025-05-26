@@ -40,6 +40,7 @@ const userSchema = new mongoose.Schema({
     resetPasswordExpires: {type: Date}
 });
 
+// Collection name: users (MongoDB will make it lowercase automatically)
 const Users = mongoose.model("Users",userSchema);
 
 module.exports = Users;
