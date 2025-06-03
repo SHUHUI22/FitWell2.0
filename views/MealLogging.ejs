@@ -1,0 +1,95 @@
+<!-- Head -->
+<%- include("partials/head",{title: "Meal Logging" , cssFile: "MealLogging_style.css" }) %>
+
+    <!-- Navigation bar -->
+    <%- include("partials/nav") %>
+
+    <!-- Contains the web page document’s main content  -->
+    <main>
+        <div class="container pb-3">
+            <h2>Meal Logging</h2>
+            <div class="d-flex justify-content-center">
+                <input type="date" id="log-date" class="form-control" />
+            </div>
+            <div id="logged-meal-container">
+                <!-- Breakfast -->
+                <div class="meal-category" id="breakfast">
+                    <h3>Breakfast</h3>
+                    <div class="logged-meal-list" id="breakfast-list"></div>
+                    <button class="btn btn-log">Log Meal</button>
+                </div>
+
+                <!-- Lunch -->
+                <div class="meal-category" id="lunch">
+                    <h3>Lunch</h3>
+                    <div class="logged-meal-list" id="lunch-list"></div>
+                    <button class="btn btn-log">Log Meal</button>
+                </div>
+
+                <!-- Dinner -->
+                <div class="meal-category" id="dinner">
+                    <h3>Dinner</h3>
+                    <div class="logged-meal-list" id="dinner-list"></div>
+                    <button class="btn btn-log">Log Meal</button>
+                </div>
+
+                <div id="summary-section">
+                    <h3>Daily Intake Summary</h3>
+                    <table id="summary-table" class="table table-bordered table-striped text-center">
+                        <thead class="table-secondary">
+                            <tr>
+                                <th>Calories (kcal)</th>
+                                <th>Carbs (g)</th>
+                                <th>Fat (g)</th>
+                                <th>Protein (g)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr id="summary-row">
+                                <td>0</td>
+                                <td>0</td>
+                                <td>0</td>
+                                <td>0</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bootstrap Modal -->
+        <div class="modal fade" id="mealModal" tabindex="-1" aria-labelledby="mealModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered modal-lg">
+                <div class="modal-content p-4">
+
+                    <!-- Modal Header -->
+                    <div class="modal-header">
+                        <h5 class="modal-title fw-bold" id="mealModalLabel">Log Meal</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+
+                    <!-- Modal Body -->
+                    <div class="modal-body">
+
+                        <!-- Search Section -->
+                        <input type="text" class="form-control mb-3" id="search-input"
+                            placeholder="Search for a meal..." oninput="searchMeal()" />
+                        <div id="search-results"></div>
+
+                        <!-- Serving Section -->
+                        <div id="serving-section" class="mt-4 d-none">
+                            <h4 id="selected-meal-name" class="mb-3"></h4>
+                            <label class="form-label">Number of servings:</label>
+                            <input type="number" class="form-control w-25 mb-3" id="servings-input" min="1" value="1" />
+                            <button class="btn btn-success btn-modal-log">Log My Meal</button>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+        <%- include("partials/footer", {scriptFile:"MealLogging_script.js"}) %>
