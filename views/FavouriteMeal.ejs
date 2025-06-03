@@ -1,0 +1,46 @@
+<!-- Head -->
+<%- include("partials/head",{title: "Favourite Meal" , cssFile: "FavouriteMeal_style.css" }) %>
+
+    <!-- Navigation bar -->
+    <%- include("partials/nav") %>
+
+    <!-- Contains the web page document’s main content  -->
+    <main>
+        <div class="container">
+            <h2 class="text-center">My Favourite Meals</h2>
+            <p class="text-center text-muted">
+                Here you can view and manage all your favourite meals. Click on any meal to see more details, and remove
+                it from your favourites list if you'd like. Enjoy your personalized meal collection!
+            </p>
+
+            <div id="favourites-container" class="row">
+                <!-- Favourites will be dynamically populated here -->
+                <div class="d-flex flex-column justify-content-center align-items-center bg-white rounded rounded-5">
+                    <img class="img-fluid" src="/images/favourite.png" alt="Favourite illustration">
+                    <p class="text-muted">You haven't added any favorites yet. You may search for a meal and click
+                        <strong>"Add to Favourites"</strong> to save it.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal -->
+        <div class="modal fade" id="mealModal" tabindex="-1" aria-labelledby="mealModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered modal-lg p-4">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="mealModalLabel"></h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body text-center" id="modal-steps">
+                        <!-- Content filled by JavaScript -->
+                    </div>
+                    <div class="modal-footer justify-content-center">
+                        <button class="btn btn-outline-danger" id="btn-remove-fav">❤️ Remove from My Favourites</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+<!-- Footer -->
+        <%- include("partials/footer", {scriptFile:"FavouriteMeal_script.js"}) %>

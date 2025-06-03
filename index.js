@@ -54,11 +54,21 @@ app.use((req, res, next) => {
 // Import routes
 const LandingPageRoute = require("./routes/LandingPageRoute");
 const authRoute = require("./routes/authRoute");
+const NutritionPlannerRoute = require("./routes/NutritionPlannerRoute");
+const MealSuggestionRoute = require("./routes/MealSuggestionRoute");
+const MealLoggingRoute = require("./routes/MealLoggingRoute");
+const FavouriteMealRoute = require("./routes/FavouriteMealRoute");
+const CalculatorRoute = require("./routes/CalculatorRoute");
 // ...
 
 // Use routes
 app.use('/FitWell', LandingPageRoute);
 app.use('/FitWell', authRoute);
+app.use('/FitWell', NutritionPlannerRoute);
+app.use('/FitWell', MealSuggestionRoute);
+app.use('/FitWell', MealLoggingRoute);
+app.use('/FitWell', FavouriteMealRoute);
+app.use('/FitWell', CalculatorRoute);
 // ...
 
 // 404 error handler 

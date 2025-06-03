@@ -1,5 +1,5 @@
 // spoonacular API key 
-const apiKey = "931113120c0c4a369daaa8e9bf92f571";
+const apiKey = "82f7eda70d74498a882133bf6395e55f";
 
 function showInstructionMessage() {
   const resultsContainer = document.getElementById("search-result");
