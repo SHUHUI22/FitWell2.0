@@ -60,7 +60,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
     //Handle logworkout form
     document.querySelector("form").addEventListener("submit", function (e) {
-        e.preventDefault();
 
         const type = document.getElementById("workoutType").value;
         const duration = document.getElementById("duration").value;
