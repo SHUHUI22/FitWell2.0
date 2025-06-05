@@ -1,22 +1,5 @@
 const bsModal = new bootstrap.Modal(document.getElementById('editModal'));
 
-const activityData = [
-  {
-    date: "16 Apr",
-    type: "Cycling",
-    detail: "15.2 km",
-    time: "45 min",
-    calories: "411 kcal"
-  },
-  {
-    date: "15 Apr",
-    type: "Yoga",
-    detail: "Vinyasa",
-    time: "30 min",
-    calories: "87 kcal"
-  }
-];
-
 const activityContainer = document.getElementById("activityHistory");
 activityContainer.innerHTML = '<h2 class="fw-bold mb-4">Activity History</h2>';
 
@@ -66,7 +49,7 @@ activityData.forEach((activity, index) => {
   const btnDelete = activityCard.querySelector(".btn-delete");
 
   //Edit Button
-  btnEdit.addEventListener("click", () => {
+  btnEdit.addEventListener("click", () => { 
     const detailInput = document.getElementById("editDetail");
     const timeInput = document.getElementById("editTime");
     const calInput = document.getElementById("editCalories");
@@ -91,7 +74,7 @@ activityData.forEach((activity, index) => {
     newSaveBtn.addEventListener("click", () => {
       const newDetail = detailInput.value;
       const newTime = timeInput.value;
-      const weight = parseInt(localStorage.getItem('userWeight')) || "55";
+      const weight = parseInt(localStorage.getItem('userWeight')) || 55;
       const duration = parseFloat(newTime.replace(/[^\d.]/g, ""));
 
       currentActivity.detail = newDetail;
