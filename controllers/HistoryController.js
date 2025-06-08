@@ -1,4 +1,4 @@
-const History = require('../models/History');
+const { Workout } = require('../models/Fitness');
 
 async function getActivityHistory(req,res){
     try{
@@ -10,11 +10,11 @@ async function getActivityHistory(req,res){
         const skip = (page -1)* limit;
 
         //fetch
-        const activities = await History.find({ userId }).sort({ date: -1 })
+        const activities = await Workout.find({ userId }).sort({ date: -1 })
         .skip(skip).limit(limit);
 
         // count total entries for pagination UI
-        const total = await History.countDocuments({ userId });
+        const total = await Workout.countDocuments({ userId });
         const totalPages = Math.ceil(total / limit);
 
         return res.render('history', {activities, page, totalPages, total});

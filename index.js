@@ -62,7 +62,7 @@ const HistoryRoute = require("./routes/HistoryRoute");
 app.use('/FitWell', LandingPageRoute);
 app.use('/FitWell', authRoute);
 app.use('/FitWell', FitnessRoute);
-app.use('FitWell', HistoryRoute);
+app.use('/FitWell', HistoryRoute);
 
 // ...
 

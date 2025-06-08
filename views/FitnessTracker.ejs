@@ -13,7 +13,7 @@
                     <section id="logWork" class="container">
                     <h2 class="fw-bold mb-4">Log Workout</h2>
 
-                    <form id="logWorkout_form" method="post">
+                    <form id="logWorkout_form" method="post" action="/FitWell/fitness">
                     <div class="input-log ">
                          <label for="workoutType" >Workout Type</label><br>
                          <select id="workoutType" name="workoutType" required>
@@ -36,6 +36,7 @@
                         <label for="workoutDetail">Workout Detail</label><br>
                         <input id="workoutDetail" name="detail" type="text" placeholder="Distance (in km)" required>
                     </div>
+                    <input type="hidden" id="caloriesBurned" name="caloriesBurned" />
 
                     <div>
                          <button id="btn_record" form="logWorkout_form" 
@@ -44,6 +45,7 @@
                     </div>   
                     </form>
                     </section>
+                </div>
 
                 <div class="col-md-7">
                     <div class="row px-4">
@@ -101,11 +103,11 @@
                              <!-- Activity History -->
                             <section id="activityHistory" class="container my-3">
                             <h2 class="fw-bold mb-4">Activity History 
-                                <a id="btn-view-more" href="/views/History.ejs" class=" btn-sm text-decoration-none">
+                                <a id="btn-view-more" href="/FitWell/history" class=" btn-sm text-decoration-none">
                                     <i class="fas fa-chevron-right fs-5"></i>
                                 </a></h2>
-                            <% if (recentWorkouts && recentWorkouts.length > 0 ) {%>
-                                <% recentWorkouts.forEach(workout => { %>
+                            <% if (recentHistory && recentHistory.length > 0 ) {%>
+                                <% recentHistory.forEach(workout => { %>
                                 <div class="history-item">
                                     <div class="d-flex align-items-center">
                                         <i class="fas <%= workout.icon %> history-icon"></i>

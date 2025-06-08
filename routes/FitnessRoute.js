@@ -1,13 +1,14 @@
 const express = require("express");
 const router = express.Router();
-const FitnessController = require("../controllers/FitnessController");
+const FitnessTrackerController = require("../controllers/FitnessTrackerController");
+const LogWorkoutController = require("../controllers/LogWorkoutController");
+const TodaySummaryController = require("../controllers/TodaySummaryController");
 
 // GET routes
-router.get("/todaySummary", FitnessController.getTodaySummary);
-router.get("/activityHistory", FitnessController.getRecentHistory);
+router.get("/fitness", FitnessTrackerController.showFitnessPage);
 
 // POST routes
-router.post("/logWorkout", FitnessController.createWorkout);
-router.post("/todaySummary", FitnessController.updateTodaySummary);
+router.post("/fitness", LogWorkoutController.createWorkout);
+router.post("/fitness", TodaySummaryController.updateTodaySummary);
 
 module.exports = router;

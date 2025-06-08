@@ -18,9 +18,9 @@
                         <div class="mb-3 p-3 border rounded d-flex align-items-center justify-content-between" >
 
                             <div class="d-flex align-items-center gap-4 flex-wrap">                    
-                                <i class="fas fa-person-biking me-3 fs-4 "></i>
+                                <i class="fas <%= activity.icon %> me-3 fs-4 "></i>
                                 <div><%= activity.workoutType %></div>                      
-                                <i class="fas fa-location-dot "></i> <%= activity.distance %> km 
+                                <i class="fas fa-location-dot "></i> <%= activity.detail %> km 
                                 <i class="fas fa-stopwatch"></i> <%= activity.duration %> min 
                                 <i class="fas fa-fire"></i> <%= activity.caloriesBurned %> kcal                       
                             </div>
@@ -108,7 +108,7 @@
         </div>
   
             <div class="container text-center mt-4">
-                <a href="/views/Fitness.ejs" style="width: fit-content;" class="btn btn-lg px-5 mx-auto d-block border border-2 rounded-pill" id="btn_done">Done</a>
+                <a href="/FitWell/fitness" style="width: fit-content;" class="btn btn-lg px-5 mx-auto d-block border border-2 rounded-pill" id="btn_done">Done</a>
             </div>
     </main>
 

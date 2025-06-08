@@ -60,6 +60,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     //Handle logworkout form
     document.querySelector("form").addEventListener("submit", function (e) {
+        e.preventDefault();
 
         const type = document.getElementById("workoutType").value;
         const duration = document.getElementById("duration").value;
@@ -67,8 +68,9 @@ document.addEventListener("DOMContentLoaded", function () {
         const workoutDetail = document.getElementById("workoutDetail").value;
 
         const calories = getCaloriesBurned(type, duration); // default 60kg
+    
+        document.getElementById("caloriesBurned").value = calories;
         const workout = { type, duration, date, workoutDetail, calories };
-
         // Store
         console.log("Logged Workout:", workout);
         alert("Workout recorded successfully!");

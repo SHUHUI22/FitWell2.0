@@ -3,6 +3,6 @@ const router = express.Router();
 const HistoryController = require("../controllers/HistoryController");
 
 // GET routes
-router.get("/activityHistory", HistoryController.getActivityHistory);
+router.get("/history", HistoryController.getActivityHistory);
 
 module.exports = router;
