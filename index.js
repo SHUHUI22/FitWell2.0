@@ -54,11 +54,15 @@ app.use((req, res, next) => {
 // Import routes
 const LandingPageRoute = require("./routes/LandingPageRoute");
 const authRoute = require("./routes/authRoute");
+const ProgressChartRoute = require("./routes/ProgressChartRoute");
+const userRoute = require("./routes/user");
 // ...
 
 // Use routes
 app.use('/FitWell', LandingPageRoute);
 app.use('/FitWell', authRoute);
+app.use('/FitWell', ProgressChartRoute);
+app.use('/api/user', userRoute);
 // ...
 
 // 404 error handler 
