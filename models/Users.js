@@ -36,8 +36,14 @@ const userSchema = new mongoose.Schema({
         enum: ["male","female"],
         required: true
     },
+    profilePic: {
+        data: Buffer,
+        contentType: String
+    }, 
+
     resetPasswordToken: {type: String},
     resetPasswordExpires: {type: Date}
+    
 });
 
 // Collection name: users (MongoDB will make it lowercase automatically)

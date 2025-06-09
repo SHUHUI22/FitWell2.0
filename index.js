@@ -51,14 +51,17 @@ app.use((req, res, next) => {
     next();
 });
 
+
 // Import routes
 const LandingPageRoute = require("./routes/LandingPageRoute");
 const authRoute = require("./routes/authRoute");
+const ProfileRoute = require("./routes/ProfileRoute");
 // ...
 
 // Use routes
 app.use('/FitWell', LandingPageRoute);
 app.use('/FitWell', authRoute);
+app.use('/FitWell', ProfileRoute);
 // ...
 
 // 404 error handler 
