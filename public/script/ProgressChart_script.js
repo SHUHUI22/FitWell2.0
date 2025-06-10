@@ -234,6 +234,18 @@ function initializeDurationChart() {
 
 // Function to initialize the calories burned bar chart
 let caloriesChart = null;
+const weeklyLabels = [];
+const today = new Date();
+for (let i = 6; i >= 0; i--) {
+  const date = new Date(today);
+  date.setDate(today.getDate() - i);
+  const dayLabel = date.toLocaleDateString("en-US", {
+    weekday: "short",
+    month: "numeric",
+    day: "numeric",
+  });
+  weeklyLabels.push(dayLabel);
+}
 
 // Chart configuration for different views
 const chartConfig = {
@@ -243,7 +255,7 @@ const chartConfig = {
         xAxisTitle: 'Month'
     },
     weekly: {
-        labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+        labels: weeklyLabels,
         legendLabel: 'Best Day',
         xAxisTitle: 'Day of Week'
     }
@@ -542,62 +554,156 @@ window.addEventListener('scroll', function () {
     });
 });
 
-//hardcoded data for the weight progress chart
 function initializeWeightProgressChart() {
-    const ctx = document.getElementById('weightProgressChart').getContext('2d');
+    const ctx = document.getElementById('weightProgressChart');
+    if (!ctx) {
+        console.error('Weight progress chart canvas not found');
+        return;
+    }
 
-// Sample weight data across months
-const weightData = [48, 47.5, 47, 46.8, 46.5, 46.2, 46, 45.8, 45.6, 45.5, 45.4, 45.3];
-const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    // Get weight history data from data attributes (ensure consistent naming)
+    let weightLabels = [];
+    let weightData = [];
+    
+    try {
+        weightLabels = JSON.parse(ctx.getAttribute('data-weight-labels') || '[]');
+        weightData = JSON.parse(ctx.getAttribute('data-weight-data') || '[]');
+    } catch (error) {
+        console.error('Error parsing weight data:', error);
+        return;
+    }
 
-// Target weight
-const targetWeight = 47;
+    // Check if we have data
+    if (!weightLabels.length || !weightData.length) {
+        console.log('No weight history data available');
+        // Show a message to user instead of empty chart
+        ctx.parentElement.innerHTML = '<p class="text-center text-muted">No weight history data available. Start tracking your weight to see progress!</p>';
+        return;
+    }
+    
+    // Get target weight from the page
+    const targetWeightElement = document.getElementById('target-weight');
+    const targetWeight = targetWeightElement ? parseFloat(targetWeightElement.textContent) : 50;
 
-// Chart configuration
-new Chart(ctx, {
-  type: 'line',
-  data: {
-    labels: months,
-    datasets: [
-      {
-        label: 'Weight (kg)',
-        data: weightData,
-        borderColor: '#3E7B27',
-        backgroundColor: '#E4EFE7',
-        fill: true,
-        tension: 0.3,
-        pointRadius: 4,
-        pointBackgroundColor: '#3E7B27',
-      },
-      {
-        label: 'Target Weight',
-        data: new Array(12).fill(targetWeight), // Constant horizontal line
-        borderColor: '#85A947',
-        borderDash: [6, 6],
-        pointRadius: 0,
-        fill: false,
-      },
-    ],
-  },
-  options: {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: {
-      legend: {
-        position: 'top',
-      },
-    },
-    scales: {
-      y: {
-        title: {
-          display: true,
-          text: 'Weight (kg)',
+    // Ensure targetWeight is valid
+    if (isNaN(targetWeight)) {
+        console.error('Invalid target weight');
+        return;
+    }
+
+    // Chart configuration
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: weightLabels,
+            datasets: [
+                {
+                    label: 'Weight (kg)',
+                    data: weightData,
+                    borderColor: '#3E7B27',
+                    backgroundColor: 'rgba(62, 123, 39, 0.1)',
+                    fill: true,
+                    tension: 0.3,
+                    pointRadius: 4,
+                    pointBackgroundColor: '#3E7B27',
+                    pointBorderColor: '#ffffff',
+                    pointBorderWidth: 2,
+                },
+                {
+                    label: 'Target Weight',
+                    data: new Array(weightLabels.length).fill(targetWeight),
+                    borderColor: '#85A947',
+                    borderDash: [6, 6],
+                    pointRadius: 0,
+                    pointBackgroundColor: '#85A947',
+                    pointBorderColor: '#ffffff',
+                    pointBorderWidth: 2,
+                    fill: false,
+                    tension: 0,
+                },
+            ],
         },
-        beginAtZero: false,
-      },
-    },
-  },
-});
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'top',
+                    labels: {
+                        usePointStyle: true,
+                        pointStyle: 'circle',
+                        padding: 20,
+                    }
+                },
+                tooltip: {
+                    callbacks: {
+                        title: function(context) {
+                            return `Date: ${context[0].label}`;
+                        },
+                        label: function(context) {
+                            if (context.datasetIndex === 0) {
+                                return `Weight: ${context.raw} kg`;
+                            } else {
+                                return `Target: ${context.raw} kg`;
+                            }
+                        },
+                        afterLabel: function(context) {
+                            if (context.datasetIndex === 0) {
+                                const diff = context.raw - targetWeight;
+                                if (diff > 0) {
+                                    return `${diff.toFixed(1)} kg above target`;
+                                } else if (diff < 0) {
+                                    return `${Math.abs(diff).toFixed(1)} kg below target`;
+                                } else {
+                                    return 'At target weight!';
+                                }
+                            }
+                            return '';
+                        },
+                        labelColor: function(context) {
+    if (context.datasetIndex === 0) {
+        return {
+            borderColor: '#3E7B27',
+            backgroundColor: '#3E7B27',
+        };
+    } else {
+        return {
+            borderColor: '#85A947',
+            backgroundColor: '#85A947',
+        };
+    }
+}
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    title: {
+                        display: true,
+                        text: 'Weight (kg)',
+                    },
+                    beginAtZero: false,
+                    // Safely calculate min/max with fallbacks
+                    min: Math.min(...weightData.filter(w => !isNaN(w)), targetWeight) - 2,
+                    max: Math.max(...weightData.filter(w => !isNaN(w)), targetWeight) + 2,
+                },
+                x: {
+                    title: {
+                        display: true,
+                        text: 'Date',
+                    },
+                    ticks: {
+                        maxRotation: 45,
+                        minRotation: 0
+                    }
+                },
+            },
+            interaction: {
+                intersect: false,
+                mode: 'index'
+            }
+        },
+    });
 }
 
 // Logout functionality

@@ -18,6 +18,15 @@ class ProgressChartController {
         return res.redirect("/login");
       }
 
+      // Get current weight from weight history
+      const currentWeight = ProgressChartController.getCurrentWeight(user);
+      
+      // If no current weight, you might want to redirect to profile setup
+      if (!currentWeight) {
+        console.log('No weight data found for user:', user.username);
+        // You could redirect to a setup page or use a default value
+      }
+
       // Calculate BMI
       const heightInMeters = user.height / 100; // Convert cm to meters
       const bmi = user.weight / (heightInMeters * heightInMeters);
@@ -41,6 +50,7 @@ class ProgressChartController {
       const last7DaysData = await ProgressChartController.getLast7DaysDuration(user._id);
       const monthlyCalories = await ProgressChartController.getMonthlyCalories(user._id);
       const weeklyCalories = await ProgressChartController.getWeeklyCalories(user._id);
+      const weightHistory = await ProgressChartController.getWeightHistory(user._id, 90); // Last 90 days
 
       // Prepare data for the progress chart
       const progressData = {
@@ -59,10 +69,13 @@ class ProgressChartController {
         last7DaysDurations: last7DaysData.durations,
         monthlyCalories: monthlyCalories,
         weeklyCalories: weeklyCalories,
+        weightHistoryLabels: weightHistory.labels,
+        weightHistoryData: weightHistory.weights,
       };
 
       console.log("Progress data prepared for user:", user.username);
       console.log("BMI calculated:", roundedBMI, "Status:", bmiStatus);
+      console.log("Weight history data:", weightHistory);
 
       // Render the progress chart page with user data
       res.render("ProgressChart", progressData);
@@ -142,52 +155,45 @@ static async getMonthlyCalories(userId) {
 }
 
 static async getWeeklyCalories(userId) {
-  // Get calories for the current week (last 7 days)
-  const endDate = new Date();
-  const startDate = new Date();
-  startDate.setDate(endDate.getDate() - 6); // Last 7 days including today
+  const today = new Date();
+  today.setHours(23, 59, 59, 999); // End of today
 
-  const dailyCalories = await Workout.aggregate([
-    { 
-      $match: { 
+  const sevenDaysAgo = new Date(today);
+  sevenDaysAgo.setDate(today.getDate() - 6);
+  sevenDaysAgo.setHours(0, 0, 0, 0); // Start of 7 days ago
+
+  const result = await Workout.aggregate([
+    {
+      $match: {
         userId: new mongoose.Types.ObjectId(userId),
-        date: {  
-          $gte: startDate,
-          $lte: endDate
-        }
-      } 
+        date: { $gte: sevenDaysAgo, $lte: today },
+      },
     },
     {
       $group: {
-        _id: { 
-          dayOfWeek: { $dayOfWeek: "$date" }, 
-          date: {
-            $dateToString: {
-              format: "%Y-%m-%d",
-              date: "$date" 
-            }
-          }
-        },
-        totalCalories: { $sum: "$caloriesBurned" }
-      }
+        _id: { $dateToString: { format: "%Y-%m-%d", date: "$date" } },
+        totalCalories: { $sum: "$caloriesBurned" },
+      },
     },
-    {
-      $sort: { "_id.date": 1 }
-    }
+    { $sort: { _id: 1 } },
   ]);
 
-  // Create array for 7 days (Mon-Sun), MongoDB dayOfWeek: 1=Sunday, 2=Monday, etc.
-  const weeklyData = Array(7).fill(0);
-  const dayMapping = [6, 0, 1, 2, 3, 4, 5]; // Map MongoDB dayOfWeek to array index (Mon=0, Sun=6)
-  
-  dailyCalories.forEach(item => {
-    const mongoDayOfWeek = item._id.dayOfWeek;
-    const arrayIndex = dayMapping[mongoDayOfWeek - 1];
-    weeklyData[arrayIndex] = item.totalCalories;
-  });
+  // Create array for last 7 days (same logic as duration chart)
+  const weeklyData = [];
+
+  for (let i = 6; i >= 0; i--) {
+    const date = new Date(today);
+    date.setDate(today.getDate() - i);
+    const dateStr = date.toISOString().split("T")[0];
+
+    // Find calories for this date
+    const dayData = result.find((r) => r._id === dateStr);
+    weeklyData.push(dayData ? dayData.totalCalories : 0);
+  }
 
   return weeklyData;
 }
+
   static async getLast7DaysDuration(userId) {
     const today = new Date();
     today.setHours(23, 59, 59, 999); // End of today
@@ -271,6 +277,92 @@ static async getWeeklyCalories(userId) {
 
   return streak;
 }
+
+// Helper method to get current weight from weight history
+  static getCurrentWeight(user) {
+    if (!user.weightHistory || user.weightHistory.length === 0) {
+      return null;
+    }
+    
+    // Get the most recent weight entry
+    const sortedHistory = user.weightHistory.sort((a, b) => new Date(b.date) - new Date(a.date));
+    return sortedHistory[0].weight;
+  }
+
+  // Fixed getWeightHistory method
+  static async getWeightHistory(userId, days = 30) {
+    try {
+      const user = await Users.findById(userId);
+      if (!user) {
+        console.log('User not found for weight history');
+        return { labels: [], weights: [] };
+      }
+
+      // Check if user has weight history
+      if (!user.weightHistory || user.weightHistory.length === 0) {
+        console.log('No weight history found for user');
+        return { labels: [], weights: [] };
+      }
+
+      // Get weight history for the specified number of days
+      const cutoffDate = new Date();
+      cutoffDate.setDate(cutoffDate.getDate() - days);
+
+      // Filter and sort weight history
+      const recentHistory = user.weightHistory
+        .filter(entry => {
+          const entryDate = new Date(entry.date);
+          return entryDate >= cutoffDate && !isNaN(entryDate.getTime()) && entry.weight != null;
+        })
+        .sort((a, b) => new Date(a.date) - new Date(b.date));
+
+      // If no recent history, return empty arrays
+      if (recentHistory.length === 0) {
+        console.log('No recent weight history found');
+        return { labels: [], weights: [] };
+      }
+
+      // Format data for chart
+      const labels = recentHistory.map(entry => {
+        const date = new Date(entry.date);
+        return date.toLocaleDateString("en-US", { 
+          month: "short", 
+          day: "numeric" 
+        });
+      });
+      
+      const weights = recentHistory.map(entry => entry.weight);
+
+      console.log('Weight history data:', { labels, weights });
+      return { labels, weights };
+    } catch (error) {
+      console.error("Error getting weight history:", error);
+      return { labels: [], weights: [] };
+    }
+  }
+
+
+// static async migrateExistingWeights() {
+//   try {
+//     const users = await Users.find({ weight: { $exists: true, $ne: null } });
+    
+//     for (const user of users) {
+//       // Only add to history if weightHistory is empty or doesn't exist
+//       if (!user.weightHistory || user.weightHistory.length === 0) {
+//         user.weightHistory = [{
+//           weight: user.weight,
+//           date: new Date()
+//         }];
+//         await user.save();
+//         console.log(`Migrated weight for user: ${user.username}`);
+//       }
+//     }
+    
+//     console.log(`Migration completed for ${users.length} users`);
+//   } catch (error) {
+//     console.error("Migration error:", error);
+//   }
+// }
 
 
 

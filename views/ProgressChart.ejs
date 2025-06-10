@@ -195,7 +195,10 @@
           <div class="p-4 rounded-4 shadow bg-white h-100">
             <h2 class="container-header">Weight Progress Chart</h2>
             <div class="d-flex justify-content-between align-items-center my-5">
-              <canvas id="weightProgressChart" style="width: 100%; height: 350px;"></canvas>
+              <canvas id="weightProgressChart" 
+              data-weight-labels='<%= JSON.stringify(weightHistoryLabels) %>'
+              data-weight-data='<%= JSON.stringify(weightHistoryData) %>'
+              style="width: 100%; height: 350px;"></canvas>
 
             </div>
           </div>
