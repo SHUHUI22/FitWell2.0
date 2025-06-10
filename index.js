@@ -29,6 +29,9 @@ app.use(express.static(path.join(__dirname,'public')));
 // To parse form data in POST request body:
 app.use(express.urlencoded({ extended: true })); 
 
+// To parse JSON data in POST request body:
+app.use(express.json());
+
 // Session middleware
 const session = require("express-session");
 const MongoStore = require("connect-mongo");
@@ -59,6 +62,7 @@ const MealSuggestionRoute = require("./routes/MealSuggestionRoute");
 const MealLoggingRoute = require("./routes/MealLoggingRoute");
 const FavouriteMealRoute = require("./routes/FavouriteMealRoute");
 const CalculatorRoute = require("./routes/CalculatorRoute");
+const AuthStatusRoute = require("./routes/AuthStatusRoute");
 // ...
 
 // Use routes
@@ -69,6 +73,7 @@ app.use('/FitWell', MealSuggestionRoute);
 app.use('/FitWell', MealLoggingRoute);
 app.use('/FitWell', FavouriteMealRoute);
 app.use('/FitWell', CalculatorRoute);
+app.use('/FitWell', AuthStatusRoute);
 // ...
 
 // 404 error handler 
