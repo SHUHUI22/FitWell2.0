@@ -28,6 +28,7 @@ app.use(express.static(path.join(__dirname,'public')));
 
 // To parse form data in POST request body:
 app.use(express.urlencoded({ extended: true })); 
+app.use(express.json());
 
 // Session middleware
 const session = require("express-session");
@@ -54,11 +55,13 @@ app.use((req, res, next) => {
 // Import routes
 const LandingPageRoute = require("./routes/LandingPageRoute");
 const authRoute = require("./routes/authRoute");
-// ...
+const reminderRoute = require("./routes/reminderRoute");
 
 // Use routes
 app.use('/FitWell', LandingPageRoute);
 app.use('/FitWell', authRoute);
+app.use('/FitWell', reminderRoute);  
+
 // ...
 
 // 404 error handler 

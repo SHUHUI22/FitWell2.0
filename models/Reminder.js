@@ -1,0 +1,38 @@
+const mongoose = require('mongoose');
+
+const reminderSchema = new mongoose.Schema({
+  category: {
+    type: String,
+    required: true,
+    enum: ['workout', 'nutrition', 'water']
+  },
+  title: {
+    type: String,
+    required: true
+  },
+  date: {
+    type: String, // or use Date if preferred
+    required: true
+  },
+  time: {
+    type: String,
+    required: true
+  },
+  repeat: {
+    type: String,
+    enum: ['none', 'daily', 'weekly', 'monthly'],
+    default: 'none'
+  },
+  userEmail: {
+    type: String,
+    required: true
+  },
+   isNotificationEnabled: {
+    type: Boolean,
+    default: true  
+  }
+},{
+ timestamps: true
+});
+
+module.exports = mongoose.model('reminders', reminderSchema);
