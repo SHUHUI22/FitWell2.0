@@ -16,4 +16,6 @@ router.post("/changePassword", ProfileController.changePassword);
 //POST delete account
 router.post("/Profile/DeleteAccount", ProfileController.deleteAccount);
 
+router.post("/toggleNotification", ProfileController.toggleNotification);
+
 module.exports = router;

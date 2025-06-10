@@ -51,6 +51,7 @@ app.use((req, res, next) => {
     next();
 });
 
+app.use(express.json());
 
 // Import routes
 const LandingPageRoute = require("./routes/LandingPageRoute");
@@ -63,6 +64,7 @@ app.use('/FitWell', LandingPageRoute);
 app.use('/FitWell', authRoute);
 app.use('/FitWell', ProfileRoute);
 // ...
+
 
 // 404 error handler 
 app.use((req, res) => {

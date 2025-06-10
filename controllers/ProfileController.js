@@ -2,33 +2,50 @@ const Users = require('../models/Users');
 
 async function getProfile(req, res) {
     try {
-      
         const userId = req.session.userId;
 
         const user = await Users.findById(userId).select("-password");
 
         const alertMessage = req.query.alert;
-
         const passwordChangedSuccess = req.session.passwordChangedSuccess;
         const passwordError = req.session.passwordError;
 
-        // Clear immediately
         delete req.session.passwordChangedSuccess;
         delete req.session.passwordError;
 
         res.render("Profile", {
             user,
+            notificationSettings: user.notification,
             alertMessage,
             passwordChangedSuccess,
-            passwordError
+            passwordError,
         });
-
-      
     } catch (err) {
         console.error("Profile fetch error:", err);
         res.status(500).render("error", { message: "Server error" });
     }
 }
+
+
+async function toggleNotification(req, res) {
+    try {
+        const { category, isNotificationEnabled } = req.body;
+        const userId = req.session.userId;
+
+        // Update the user's notification preference
+        await Users.findByIdAndUpdate(
+            userId,
+            { $set: { [`notification.${category}`]: isNotificationEnabled } },
+            { new: true }
+        );
+
+        return res.status(200).json({ message: "Notification updated successfully" });
+    } catch (err) {
+        console.error("Error toggling notification:", err);
+        return res.status(500).json({ message: "Server error while updating notification" });
+    }
+}
+
 
 const bcrypt = require("bcrypt");
 
@@ -67,32 +84,43 @@ const path = require("path");
 async function updateProfile(req, res) {
     try {
         const userId = req.session.userId;
+        const user = await Users.findOne({ _id: userId });
 
-        const updatedData = {
-            username: req.body.username,
-            age: req.body.age,
-            gender: req.body.gender,
-            height: req.body.height,
-            weight: req.body.weight,
-            targetWeight: req.body.targetWeight
-        };
+        const newWeight = Number(req.body.weight);
+
+        // Only log weight history if weight changed
+        if (newWeight !== user.weight) {
+            user.weightHistory.push({
+                weight: newWeight,
+                date: new Date()
+            });
+            user.weight = newWeight; // also update current weight
+        }
+
+        // Update other fields
+        user.username = req.body.username;
+        user.age = req.body.age;
+        user.gender = req.body.gender;
+        user.height = req.body.height;
+        user.targetWeight = req.body.targetWeight;
 
         if (req.file) {
-            updatedData.profilePic = {
+            user.profilePic = {
                 data: req.file.buffer,
                 contentType: req.file.mimetype
             };
         }
 
-        await Users.findByIdAndUpdate(userId, updatedData);
+        await user.save(); // saves everything, including weightHistory
 
         res.redirect("/FitWell/Profile");
 
     } catch (err) {
         console.error("Error updating profile:", err);
-        res.status(500).render("error", { message: "Server error" });
+        res.status(500).send("Server error");
     }
 }
+
 
 
 async function deleteAccount(req, res) {
@@ -116,4 +144,4 @@ async function deleteAccount(req, res) {
   }
 }
 
-module.exports = { getProfile, updateProfile, changePassword, deleteAccount };
+module.exports = { getProfile, toggleNotification, updateProfile, changePassword, deleteAccount };

@@ -1,4 +1,32 @@
 document.addEventListener("DOMContentLoaded", function () {
+
+    document.querySelectorAll(".notification-toggle").forEach(toggle => {
+    toggle.addEventListener("change", async function () {
+        const category = this.dataset.category;
+        const isEnabled = this.checked;
+
+        try {
+            const response = await fetch("/FitWell/toggleNotification", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    category,
+                    isNotificationEnabled: isEnabled
+                })
+            });
+
+            const result = await response.json();
+            if (!response.ok) throw new Error(result.message || "Update failed");
+            console.log("Notification setting updated:", result);
+        } catch (error) {
+            console.error("Error updating notification setting:", error);
+            alert("Failed to update notification setting.");
+        }
+    });
+});
+
     function cleanModalBackdrop() {
         const backdrop = document.querySelector('.modal-backdrop');
         if (backdrop) backdrop.remove();

@@ -18,7 +18,10 @@
               <h2><%= user.username %></h2>
               <div class="info-row"><span><strong>Email</strong></span><span><%= user.email %></span></div>
               <div class="info-row"><span><strong>Age</strong></span><span><%= user.age %></span></div>
-              <div class="info-row"><span><strong>Gender</strong></span><span><%= user.gender %></span></div>
+              <div class="info-row">
+              <span><strong>Gender</strong></span>
+              <span><%= user.gender.charAt(0).toUpperCase() + user.gender.slice(1) %></span>
+              </div>
               <div class="info-row"><span><strong>Height</strong></span><span><%= user.height %> m</span></div>
               <div class="info-row"><span><strong>Weight</strong></span><span><%= user.weight %> kg</span></div>
               <div class="info-row"><span><strong>Target Weight</strong></span><span><%= user.targetWeight %> kg</span></div>
@@ -31,17 +34,20 @@
                 <h3>Notification</h3>
                 <label class="toggle-switch">
                   <span>Workout</span>
-                  <input type="checkbox" checked />
+                  <input type="checkbox" class="notification-toggle" data-category="workout" 
+                  <%= notificationSettings.workout ? 'checked' : '' %> />
                   <span class="slider"></span>
                 </label>
                 <label class="toggle-switch">
-                  <span>Meal</span>
-                  <input type="checkbox" checked />
+                  <span>Nutrition</span>
+                   <input type="checkbox" class="notification-toggle" data-category="nutrition" 
+                   <%= notificationSettings.nutrition ? 'checked' : '' %> />
                   <span class="slider"></span>
                 </label>
                 <label class="toggle-switch">
                   <span>Water</span>
-                  <input type="checkbox" checked />
+                  <input type="checkbox" class="notification-toggle" data-category="water"
+                  <%= notificationSettings.water ? 'checked' : '' %> />
                   <span class="slider"></span>
                 </label>
               </div>
@@ -123,8 +129,8 @@
                 <div class="mb-3">
                   <label for="modalGender" class="form-label">Gender</label>
                   <select id="modalGender" name="gender" class="form-control">
-                    <option value="Male" <%= user.gender === 'Male' ? 'selected' : '' %>>Male</option>
-                    <option value="Female" <%= user.gender === 'Female' ? 'selected' : '' %>>Female</option>
+                    <option value="male" <%= user.gender === 'male' ? 'selected' : '' %>>Male</option>
+                    <option value="female" <%= user.gender === 'female' ? 'selected' : '' %>>Female</option>
                   </select>
                 </div>
                 <div class="mb-3">
