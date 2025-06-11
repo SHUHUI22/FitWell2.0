@@ -1,0 +1,47 @@
+<!-- Head -->
+<%- include("partials/head",{title: "Nutrition Planner" , cssFile: "NutritionPlanner_style.css" }) %>
+
+    <!-- Navigation bar -->
+    <%- include("partials/nav") %>
+
+    <!-- Contains the web page document’s main content  -->
+
+    <main>
+        <div id="backdrop" class="container-fluid px-0">
+            <h1>Your Personalized Nutrition Planner</h1>
+            <p>Plan, log, and track your meals based on your goals - with detailed nutrient breakdowns.</p>
+        </div>
+        
+        <div class="container py-4">
+            <div id="nutrition-feature" class="row text-center g-4 bg-light m-3 py-2">
+                <div class="col-md-3">
+                    <img src="/images/goal.png" width="40" alt="Goal Icon" class="mb-2">
+                    <h5 class="text-success fw-bold">Meal Suggestion Based on Goals</h5>
+                    <p>Get meal suggestions tailored for weight, muscle gain or maintenance</p>
+                    <button id="btn-meal-suggestion" class="btn btn-outline-success mb-2">Explore</button>
+                </div>
+                <div class="col-md-3">
+                    <img src="/images/star.png" width="40" alt="Favourite Icon" class="mb-2">
+                    <h5 class="text-success fw-bold">Favourite Meals</h5>
+                    <p>Save and access your favourite meals for quick tracking</p>
+                    <button id="btn-myfav" class="btn btn-outline-success mb-2">My Favourite Meals</button>
+                </div>
+                <div class="col-md-3">
+                    <img src="/images/openbook.png" width="40" alt="Logging Icon" class="mb-2">
+                    <h5 class="text-success fw-bold">Custom Meal Logging & Tracking</h5>
+                    <p>Log your meals, and track your daily calories & nutrients intake easily</p>
+                    <button id="btn-log" class="btn btn-outline-success mb-2">Log Meals</button>
+                </div>
+                <div class="col-md-3">
+                    <img src="/images/piechart.png" width="40" alt="Calculator Icon" class="mb-2">
+                    <h5 class="text-success fw-bold">Calories & Nutrient Calculator</h5>
+                    <p>Calculate calories & macros from ingredients and servings</p>
+                    <button id="btn-cal" class="btn btn-outline-success mb-2">Explore</button>
+                </div>
+            </div>
+        
+        </div>
+    </main>
+
+    <!-- Footer -->
+        <%- include("partials/footer", {scriptFile:"NutritionPlanner_script.js"}) %>

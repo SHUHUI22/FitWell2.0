@@ -1,17 +1,17 @@
 document.getElementById("btn-meal-suggestion").addEventListener("click", function(){
-    window.location.href = "MealSuggestion.html";
+    window.location.href = "/FitWell/MealSuggestion";
 });
 
 document.getElementById("btn-myfav").addEventListener("click", function(){
-    window.location.href = "FavouriteMeal.html";
+    window.location.href = "/FitWell/FavouriteMeal";
 });
 
 document.getElementById("btn-log").addEventListener("click", function(){
-    window.location.href = "MealLogging.html";
+    window.location.href = "/FitWell/MealLogging";
 });
 
 document.getElementById("btn-cal").addEventListener("click", function(){
-    window.location.href = "Calculator.html";
+    window.location.href = "/FitWell/Calculator";
 });
 
 
@@ -65,11 +65,11 @@ document.addEventListener("DOMContentLoaded", function () {
         const href = link.getAttribute("href");
         // Check if the href contains the current page name or ends with it
         if (href && (href.includes(currentPage) || href.endsWith(currentPage) || 
-            (currentPage === "NutritionPlanner.html" && href.includes("NutritionPlanner.html")))) {
+            (currentPage === "NutritionPlanner" && href.includes("NutritionPlanner")))) {
             link.classList.add("active");
             
             // Add green highlight for Nutrition Planner
-            if (currentPage === "ProgressChart.html") {
+            if (currentPage === "ProgressChart") {
                 link.classList.add("active-green");
             }
         }
@@ -94,6 +94,6 @@ function logout() {
 
     // Redirect after a slight delay
     setTimeout(function () {
-        window.location.href = "Login.html";
+        window.location.href = "/FitWell/Login";
     }, 500);
 }
