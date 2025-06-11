@@ -9,6 +9,7 @@ const uri = "mongodb+srv://admin:OCC2G7FitWell@fitwell.ybm1ueb.mongodb.net/Fitwe
 mongoose.connect(uri)
 .then(()=> {
     console.log("Connected to MongoDB Atlas");
+
     app.listen(port, ()=>{
         console.log(`Server start listen to ${port}`);
     });
@@ -28,6 +29,7 @@ app.use(express.static(path.join(__dirname,'public')));
 
 // To parse form data in POST request body:
 app.use(express.urlencoded({ extended: true })); 
+app.use(express.json());
 
 // Session middleware
 const session = require("express-session");
@@ -54,11 +56,13 @@ app.use((req, res, next) => {
 // Import routes
 const LandingPageRoute = require("./routes/LandingPageRoute");
 const authRoute = require("./routes/authRoute");
-// ...
+const reminderRoute = require("./routes/reminderRoute");
 
 // Use routes
 app.use('/FitWell', LandingPageRoute);
 app.use('/FitWell', authRoute);
+app.use('/FitWell', reminderRoute);  
+
 // ...
 
 // 404 error handler 

@@ -1,12 +1,10 @@
 document.addEventListener('DOMContentLoaded', function () {
-    // User login and logout logic
     const isLoggedIn = localStorage.getItem("loggedIn");
 
     if (isLoggedIn === "true") {
         handleLoggedInState();
     }
 
-    // Handle logged-in state UI changes
     function handleLoggedInState() {
         document.body.classList.add("logged-in");
 
@@ -39,17 +37,14 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    // Highlight the active page in the navigation
     const currentPage = window.location.pathname.split("/").pop();
     const navLinks = document.querySelector("#nav_reminder a");
 
     const isReminderPage = currentPage === "CreateReminder.html" || currentPage === "MyReminder.html";
-    console.log(currentPage)
     if (isReminderPage && navLinks) {
         navLinks.classList.add("active");
     }
 
-    // Logout functionality
     const btn_logout = document.querySelector("#btn_logout");
     if (btn_logout) {
         btn_logout.addEventListener("click", logout);
@@ -65,135 +60,181 @@ document.addEventListener('DOMContentLoaded', function () {
             window.location.href = "Login.html";
         }, 500);
     }
-    
-    // DOM elements for reminders list and empty state
+
     const remindersList = document.querySelector('#reminder-list');
     const emptyState = document.querySelector('#empty-state');
     let reminderToDelete = null;
     let reminderToEdit = null;
 
-    // Update the display of the empty state based on the reminders list
     function updateEmptyState() {
-        const hasReminders = remindersList.querySelectorAll('.reminder-item').length > 0;
-        emptyState.style.display = hasReminders ? 'none' : 'block';
-        remindersList.style.display = hasReminders ? 'block' : 'none';
+        const hasReminders = remindersList && remindersList.querySelectorAll('.reminder-item').length > 0;
+        if (emptyState) {
+            emptyState.style.display = hasReminders ? 'none' : 'block';
+        }
+        if (remindersList) {
+            remindersList.style.display = hasReminders ? 'block' : 'none';
+        }
     }
 
     updateEmptyState();
 
-    // Delete modal
-    const deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
+    const deleteModalElement = document.getElementById('deleteModal');
     const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
+    let deleteModal;
 
-    // Handle reminder interactions (edit, delete)
-    remindersList.addEventListener('click', function (event) {
-        const target = event.target;
+    if (deleteModalElement && typeof bootstrap !== 'undefined') {
+        deleteModal = new bootstrap.Modal(deleteModalElement);
+    }
 
-        // Handle delete
-        if (target.closest('.delete-btn')) {
-            reminderToDelete = target.closest('.reminder-item');
-            deleteModal.show();
-        }
+    if (remindersList) {
+        remindersList.addEventListener('click', function (event) {
+            const target = event.target;
 
-        // Handle edit
-        if (target.closest('.edit-btn')) {
-            reminderToEdit = target.closest('.reminder-item');
-            openEditModal(reminderToEdit);
-        }
-    });
+            if (target.closest('.delete-btn')) {
+                reminderToDelete = target.closest('.reminder-item');
+                if (deleteModal) {
+                    deleteModal.show();
+                }
+            }
 
-    // Confirm delete reminder
-    confirmDeleteBtn.addEventListener('click', function () {
-        if (reminderToDelete) {
-            reminderToDelete.remove();
-            updateEmptyState();
-            deleteModal.hide();
-            reminderToDelete = null;
-        }
-    });
+            if (target.closest('.edit-btn')) {
+                reminderToEdit = target.closest('.reminder-item');
+                openEditModal(reminderToEdit);
+            }
+        });
+    }
 
-    // Open edit modal and populate with current reminder data
+    if (confirmDeleteBtn) {
+        confirmDeleteBtn.addEventListener('click', function () {
+            if (reminderToDelete) {
+                const reminderId = reminderToDelete.getAttribute('data-id');
+
+                fetch(`/FitWell/reminders/${reminderId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.message) {
+                        reminderToDelete.remove();
+                        updateEmptyState();
+                        if (deleteModal) {
+                            deleteModal.hide();
+                        }
+                        reminderToDelete = null;
+                        location.reload();
+                    }
+                })
+                .catch(error => {
+                    console.error('Error deleting reminder:', error);
+                    alert('Error deleting reminder. Please try again.');
+                });
+            }
+        });
+    }
+
     function openEditModal(reminder) {
         const title = reminder.querySelector('.reminder-text').innerText;
         const datetimeText = reminder.querySelector('.reminder-time').innerText;
-        const repeatText = datetimeText.split('-')[1].trim();
-        
-        // Parse the date string from the displayed text
-        const [datePart, timePart] = datetimeText.split('at').map(part => part.trim());
-        const timeValue = timePart.split('-')[0].trim();
-        
-        // Parse the date using the displayed format
-        const dateObj = new Date(datePart);
-        
-        // Format the date for the input field in YYYY-MM-DD format
-        // Use local date to prevent timezone issues
-        const year = dateObj.getFullYear();
-        const month = String(dateObj.getMonth() + 1).padStart(2, '0');
-        const day = String(dateObj.getDate()).padStart(2, '0');
-        const formattedDate = `${year}-${month}-${day}`;
-        
-        // Extract time and convert to 24-hour format
-        let [timeString, ampm] = timeValue.split(' ');
-        let [hours, minutes] = timeString.split(':').map(Number);
-        if (ampm === 'PM' && hours < 12) hours += 12;
-        if (ampm === 'AM' && hours === 12) hours = 0;
-        const formattedTime = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
 
-        // Populate modal with data
+        const parts = datetimeText.split(' at ');
+        const datePart = parts[0];
+        const timeAndRepeat = parts[1].split(' - ');
+        const timePart = timeAndRepeat[0];
+        const repeatPart = timeAndRepeat[1].toLowerCase();
+
         document.getElementById('editTitle').value = title;
-        document.getElementById('editDate').value = formattedDate;
-        document.getElementById('editTime').value = formattedTime;
-        document.getElementById('editRepeat').value = repeatText;
+        document.getElementById('editDate').value = datePart;
+        document.getElementById('editTime').value = timePart;
+        document.getElementById('editRepeat').value = repeatPart;
 
-        // Populate category (without allowing editing)
-        const category = reminder.querySelector('.category-tag').textContent;
-        const categorySelect = document.getElementById('editCategory');
-        categorySelect.value = category;  // Set category value
-        // categorySelect.disabled = true;  // Disable category dropdown
+        const category = reminder.querySelector('.category-tag').textContent.toLowerCase();
+        document.getElementById('editCategory').value = category;
 
-        const editModal = new bootstrap.Modal(document.getElementById('editModal'));
-        editModal.show();
-    }
-
-    // Save edited reminder
-    document.getElementById('saveEdit').addEventListener('click', function () {
-        if (reminderToEdit) {
-            saveReminderEdits(reminderToEdit);
+        const editModalElement = document.getElementById('editModal');
+        if (editModalElement && typeof bootstrap !== 'undefined') {
+            const editModal = new bootstrap.Modal(editModalElement);
+            editModal.show();
         }
-    });
-
-    // Function to save the reminder edits
-    function saveReminderEdits(reminder) {
-        const title = document.getElementById('editTitle').value;
-        const date = document.getElementById('editDate').value;
-        const time = document.getElementById('editTime').value;
-        const repeat = document.getElementById('editRepeat').value;
-
-        // Create a date object preserving the input date
-        const [year, month, day] = date.split('-').map(Number);
-        const [hours, minutes] = time.split(':').map(Number);
-        
-        // Create date object using local components to prevent timezone issues
-        const dateObj = new Date(year, month - 1, day, hours, minutes);
-        
-        // Format the date in a locale-friendly way
-        const formattedDate = dateObj.toLocaleDateString('en-US', {
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric'
-        });
-        
-        // Format the time
-        const formattedTime = dateObj.toLocaleTimeString('en-US', { 
-            hour: 'numeric', 
-            minute: '2-digit' 
-        });
-
-        // Update reminder display
-        reminder.querySelector('.reminder-text').textContent = title;
-        reminder.querySelector('.reminder-time').textContent = `${formattedDate} at ${formattedTime} - ${repeat.charAt(0).toUpperCase() + repeat.slice(1)}`;
-
-        bootstrap.Modal.getInstance(document.getElementById('editModal')).hide();
-        reminderToEdit = null;
     }
-});
+
+    const saveEditBtn = document.getElementById('saveEdit');
+    if (saveEditBtn) {
+        saveEditBtn.addEventListener('click', function () {
+            if (reminderToEdit) {
+                saveReminderEdits(reminderToEdit);
+            }
+        });
+    }
+
+    function saveReminderEdits(reminder) {
+  const data = {
+    title:    document.getElementById('editTitle').value.trim(),
+    date:     document.getElementById('editDate').value,
+    time:     document.getElementById('editTime').value,
+    repeat:   document.getElementById('editRepeat').value,
+    category: document.getElementById('editCategory').value.trim().toLowerCase()
+  };
+
+  fetch(`/FitWell/reminders/${reminder.dataset.id}`, {
+    method:  'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body:    JSON.stringify(data)
+  })
+    .then(r => r.json())
+    .then(({ message }) => {
+      if (message !== 'ok' && message !== 'Reminder updated successfully') {
+        throw new Error(message);
+      }
+
+      /* ——— 1. Update title + time ——— */
+      reminder.querySelector('.reminder-text').textContent = data.title;
+      reminder.querySelector('.reminder-time').textContent =
+        `${data.date} at ${data.time} - ${data.repeat.charAt(0).toUpperCase() + data.repeat.slice(1)}`;
+
+      /* ——— 2. Ensure the category pill exists & is styled ——— */
+      let tag = reminder.querySelector('.category-tag');
+      const formatted = data.category.charAt(0).toUpperCase() + data.category.slice(1);
+      const tagClass  = `category-tag category-${data.category}`;
+
+      if (!tag) {
+        tag = document.createElement('span');
+        tag.className = tagClass;
+        tag.textContent = formatted;
+
+        // insert as first child of .reminder-details
+        const details = reminder.querySelector('.reminder-details');
+        details ? details.prepend(tag) : reminder.prepend(tag);
+      } else {
+        tag.textContent = formatted;
+        tag.className   = tagClass;
+      }
+
+      /* ——— 3. Close modal + clear backdrop ——— */
+      const modalInst = bootstrap.Modal.getInstance(document.getElementById('editModal'));
+      modalInst?.hide();
+      document.querySelectorAll('.modal-backdrop').forEach(bd => bd.remove());
+
+      reminderToEdit = null;
+      showToast('Reminder edited successfully!');
+    })
+    .catch(err => {
+      console.error(err);
+      alert('Error updating reminder');
+    });
+}
+
+
+/* helper (only once in the file) */
+function showToast(msg) {
+  const toastEl = document.getElementById('reminderToast');
+  const msgBox  = document.getElementById('toastMessage');
+  msgBox.textContent = msg;
+  new bootstrap.Toast(toastEl).show();
+}
+}
+)
+;
+

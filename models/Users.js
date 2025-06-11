@@ -37,7 +37,17 @@ const userSchema = new mongoose.Schema({
         required: true
     },
     resetPasswordToken: {type: String},
-    resetPasswordExpires: {type: Date}
+    resetPasswordExpires: {type: Date},
+
+   notification: {
+  type: Object,
+  default: {
+    water: true,
+    nutrition: true,
+    workout: true
+  }
+}
+ 
 });
 
 // Collection name: users (MongoDB will make it lowercase automatically)
