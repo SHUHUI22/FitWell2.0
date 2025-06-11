@@ -1,8 +1,13 @@
 const { Workout, Summary } = require('../models/Fitness');
+const mongoose = require("mongoose");
 
 async function showFitnessPage(req, res) {
+    console.log("Session data:", req.session);
+
     try {
-        const userId = req.session.userId;
+        const userId = new mongoose.Types.ObjectId(req.session.userId);
+        console.log("User ID at showFitnessPage:", userId);
+
         const today = new Date().toISOString().split('T')[0];
 
         // Get today's summary
@@ -10,6 +15,7 @@ async function showFitnessPage(req, res) {
 
         // Get recent workouts (limit to 3)
         const recentHistory = await Workout.find({ userId }).sort({ date: -1 }).limit(3);
+        console.log("Recent History:", recentHistory);
         
         return res.render("FitnessTracker", {
             steps: summary?.steps || 0,

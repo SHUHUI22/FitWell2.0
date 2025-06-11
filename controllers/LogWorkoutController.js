@@ -1,6 +1,7 @@
 const { Workout } = require('../models/Fitness');
 // create log workout
 async function createWorkout(req,res) {
+    console.log("createWorkout() triggered");
     try{
         const userId = req.session.userId;
         // get data from log
@@ -33,10 +34,11 @@ async function createWorkout(req,res) {
             caloriesBurned,
             icon
         });
+        console.log("Saving workout:", newWorkout);
 
-        const savedWorkout = await newWorkout.save();
+        await newWorkout.save();
         
-        return res.redirect('/FitWell/fitness').render('fitness', {savedWorkout});
+        return res.redirect('/FitWell/fitness');
     }catch(err){
         return res.status(500).json({error: 'Failed to create workout', message: err.message });
     }

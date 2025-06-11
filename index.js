@@ -29,6 +29,12 @@ app.use(express.static(path.join(__dirname,'public')));
 // To parse form data in POST request body:
 app.use(express.urlencoded({ extended: true })); 
 
+//To parse JSON request body:
+app.use(express.json());
+
+//To parse form data in POST request body:
+app.use(express.urlencoded({ extended: true}));
+
 // Session middleware
 const session = require("express-session");
 const MongoStore = require("connect-mongo");

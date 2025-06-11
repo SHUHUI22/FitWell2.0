@@ -57,26 +57,64 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         }
     });
+/*
+    // Calculate calories whenever workoutType or duration changes
+        function calculateCalories() {
+            const type = document.getElementById("workoutType").value;
+            const durationValue = document.getElementById("duration").value;
 
+        // Handle empty or invalid duration gracefully
+        const duration = parseFloat(durationValue);
+        if (isNaN(duration) || duration <= 0) {
+            document.getElementById("caloriesBurned").value = "";
+        return;
+        }
+
+         const calories = getCaloriesBurned(type, duration, weight);
+         document.getElementById("caloriesBurned").value = calories;
+        }
+
+    // Attach change event listeners to both inputs
+    document.getElementById("workoutType").addEventListener("change", calculateCalories);
+    document.getElementById("duration").addEventListener("input", calculateCalories);
     //Handle logworkout form
+    // Normal form submit handler — NO manual submit needed
+    document.querySelector("form").addEventListener("submit", function (e) {
+        e.preventDefault();
+
+        calculateCalories();
+         const calories = document.getElementById("caloriesBurned").value;
+
+        // Extra safeguard in case user tries to submit without calculating calories
+        if (!calories || isNaN(parseFloat(calories))) {
+             e.preventDefault();
+             alert("Please enter valid workout type and duration to calculate calories.");
+        }
+        this.submit();
+    });
+*/
     document.querySelector("form").addEventListener("submit", function (e) {
         e.preventDefault();
 
         const type = document.getElementById("workoutType").value;
-        const duration = document.getElementById("duration").value;
+        const duration = parseFloat(document.getElementById("duration").value);
         const date = document.getElementById("date").value;
         const workoutDetail = document.getElementById("workoutDetail").value;
 
-        const calories = getCaloriesBurned(type, duration); // default 60kg
-    
+
+        const calories = getCaloriesBurned(type, duration, weight); // default 60kg
+        if (isNaN(calories)) {
+            alert("Calories calculation failed. Please check your inputs.");
+            return;
+        }
+   
         document.getElementById("caloriesBurned").value = calories;
         const workout = { type, duration, date, workoutDetail, calories };
-        // Store
+        // Store      
         console.log("Logged Workout:", workout);
         alert("Workout recorded successfully!");
 
-        // Clear inputs
-        this.reset();
+        this.submit();
     });
 
     // Update placeholder based on workout type

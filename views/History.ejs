@@ -14,20 +14,20 @@
                     <p class ="text-muted"> No activity history found.</p>        
                 <% } else { %>
                     <% activities.forEach(activity => { %>
-                        <div ><strong><%= activity.date %></strong></div>
+                        <div ><strong><%= new Date(activity.date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' }) %></strong></div>
                         <div class="mb-3 p-3 border rounded d-flex align-items-center justify-content-between" >
 
                             <div class="d-flex align-items-center gap-4 flex-wrap">                    
                                 <i class="fas <%= activity.icon %> me-3 fs-4 "></i>
                                 <div><%= activity.workoutType %></div>                      
-                                <i class="fas fa-location-dot "></i> <%= activity.detail %> km 
+                                <i class="fas fa-location-dot "></i> <%= activity.detail %>  
                                 <i class="fas fa-stopwatch"></i> <%= activity.duration %> min 
                                 <i class="fas fa-fire"></i> <%= activity.caloriesBurned %> kcal                       
                             </div>
 
                             <div class="d-flex justify-content-center mx-auto mx-lg-0 mt-2 mt-lg-0">
-                                <button class="btn btn-outline-success btn-sm me-2 btn-edit"><i class="fas fa-pen"></i></button>
-                                <button class="btn btn-outline-danger btn-sm btn-delete"><i class="fas fa-trash"></i></button>
+                                <button class="btn btn-outline-success btn-sm me-2 btn-edit" data-id="<%= activity._id %>"><i class="fas fa-pen"></i></button>
+                                <button class="btn btn-outline-danger btn-sm btn-delete" data-id="<%= activity._id %>"><i class="fas fa-trash"></i></button>
                             </div>
                         </div>
                     <% }) %>
@@ -112,5 +112,9 @@
             </div>
     </main>
 
+    
     <!-- Footer -->
     <%- include("partials/footer", {scriptFile:"History_script.js"}) %>
+    <script>
+         const activityData = JSON.parse('<%- JSON.stringify(activities) %>');
+    </script>
