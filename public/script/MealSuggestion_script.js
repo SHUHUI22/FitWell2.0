@@ -1,5 +1,5 @@
 // spoonacular API key 
-const apiKey = "931113120c0c4a369daaa8e9bf92f571";
+const apiKey = "82f7eda70d74498a882133bf6395e55f";
 
 function showInstructionMessage() {
   const resultsContainer = document.getElementById("search-result");
@@ -11,9 +11,41 @@ function showInstructionMessage() {
   `;
 }
 
-// LocalStorage to store favourites
-const favouritesKey = 'mealFavourites';
-let favourites = JSON.parse(localStorage.getItem(favouritesKey)) || [];
+// Fetch favourites from database
+async function fetchFavourites() {
+  try {
+    const res = await fetch('/FitWell/favourites'); // Changed from /api/favourites to /favourites
+    
+    if (res.status === 401) {
+      // User not logged in
+      console.log('User not logged in - cannot fetch favourites');
+      return [];
+    }
+    
+    if (!res.ok) {
+      throw new Error(`HTTP error! status: ${res.status}`);
+    }
+    
+    const data = await res.json();
+    console.log('Fetched favourites:', data);
+    return data;
+  } catch (error) {
+    console.error('Error fetching favourites:', error);
+    return [];
+  }
+}
+
+// Check if user is authenticated
+async function checkAuthStatus() {
+  try {
+    const res = await fetch('/FitWell/api/auth/status');
+    const data = await res.json();
+    return data.isLoggedIn;
+  } catch (error) {
+    console.error('Error checking auth status:', error);
+    return false;
+  }
+}
 
 let selectedGoal = "";
 
@@ -29,7 +61,6 @@ document.querySelectorAll(".dropdown-item").forEach(item => {
 document.getElementById("btn-search").addEventListener("click", searchMeal);
 
 async function searchMeal() {
-
   // Get search input value
   const query = document.getElementById("search-input").value.trim();
 
@@ -49,6 +80,7 @@ async function searchMeal() {
   else if (selectedGoal === "none" || selectedGoal === "") {
     filterParams = ""; // No filters applied
   }
+  
   try {
     // Call Spoonacular API to search for recipes
     const searchRes = await fetch(`https://api.spoonacular.com/recipes/complexSearch?query=${query}${filterParams}&number=10&addRecipeNutrition=true&apiKey=${apiKey}`);
@@ -87,79 +119,257 @@ async function searchMeal() {
       // Add event to open modal with full recipe steps when the card is clicked
       mealDiv.addEventListener('click', () => showRecipeSteps(info)); // Add click event to show recipe steps
       resultsContainer.appendChild(mealDiv);
-
     }
   }
   catch (err) {
     console.error(err);
     resultsContainer.innerHTML = 'Error fetching data.';
   }
+}
 
-  // Function to get nutrient amount from the nutrition object
-  function getNutrient(nutrition, name) {
-    const item = nutrition?.nutrients?.find(n => n.name === name);
-    return item ? `${item.amount} ${item.unit}` : 'N/A';
-  }
+// Function to get nutrient amount from the nutrition object
+function getNutrient(nutrition, name) {
+  const item = nutrition?.nutrients?.find(n => n.name === name);
+  return item ? `${item.amount} ${item.unit}` : 'N/A';
+}
 
-  // Function to show detailed recipe steps in a modal
-  function showRecipeSteps(info) {
-    const modalTitle = document.getElementById('mealModalLabel');
-    const modalBody = document.getElementById('modal-steps');
+// Function to show detailed recipe steps in a modal
+async function showRecipeSteps(info) {
+  const modalTitle = document.getElementById('mealModalLabel');
+  const modalBody = document.getElementById('modal-steps');
 
-    modalTitle.innerText = info.title;
+  modalTitle.innerText = info.title;
 
-    // Extract recipe steps if available
-    const steps = info.analyzedInstructions?.[0]?.steps?.map(s => s.step) || [];
+  // Extract recipe steps if available
+  const steps = info.analyzedInstructions?.[0]?.steps?.map(s => s.step) || [];
 
-    // Populate modal body with meal info and steps
-    modalBody.innerHTML = `
-        <img src="${info.image}" alt="${info.title}" class="img-fluid rounded mb-3" style="max-height: 250px;">
-        <div class="nutrition d-flex justify-content-center gap-4 mb-3">
-            <p class="meal-calorie mb-0"><strong>Calories:</strong> ${getNutrient(info.nutrition, 'Calories')}</p>
-            <p class="meal-protein mb-0"><strong>Protein:</strong> ${getNutrient(info.nutrition, 'Protein')}</p>
-            <p class="meal-fat mb-0"><strong>Fat:</strong> ${getNutrient(info.nutrition, 'Fat')}</p>
-        </div>
-        <h6 class="text-start"><strong>Steps:</strong></h6>
-        <ol class="text-start">
-            ${steps.length > 0 ? steps.map(step => `<li>${step}</li>`).join('') : '<li>No instructions available.</li>'}
-        </ol>
-    `;
+  // Populate modal body with meal info and steps
+  modalBody.innerHTML = `
+      <img src="${info.image}" alt="${info.title}" class="img-fluid rounded mb-3" style="max-height: 250px;">
+      <div class="nutrition d-flex justify-content-center gap-4 mb-3">
+          <p class="meal-calorie mb-0"><strong>Calories:</strong> ${getNutrient(info.nutrition, 'Calories')}</p>
+          <p class="meal-protein mb-0"><strong>Protein:</strong> ${getNutrient(info.nutrition, 'Protein')}</p>
+          <p class="meal-fat mb-0"><strong>Fat:</strong> ${getNutrient(info.nutrition, 'Fat')}</p>
+      </div>
+      <h6 class="text-start"><strong>Steps:</strong></h6>
+      <ol class="text-start">
+          ${steps.length > 0 ? steps.map(step => `<li>${step}</li>`).join('') : '<li>No instructions available.</li>'}
+      </ol>
+  `;
 
-    // Replace old favourite button to remove previous listeners
-    const oldBtnFav = document.getElementById("btn-fav");
-    const newBtnFav = oldBtnFav.cloneNode(true);
-    oldBtnFav.replaceWith(newBtnFav);
-    const btn_fav = newBtnFav;
+  // Replace old favourite button to remove previous listeners
+  const oldBtnFav = document.getElementById("btn-fav");
+  const newBtnFav = oldBtnFav.cloneNode(true);
+  oldBtnFav.replaceWith(newBtnFav);
+  const btn_fav = newBtnFav;
 
-    // Check if meal is already in favorites and update button
-    let isFavourite = favourites.some(fav => fav.id === info.id);
-    btn_fav.textContent = isFavourite ? "❤️ Remove from Favourites" : "❤️ Add to Favourites";
-    btn_fav.style.backgroundColor = isFavourite ? "#ff6f61" : "";
+  // Check if user is logged in
+  const isLoggedIn = await checkAuthStatus();
+  
+  if (!isLoggedIn) {
+    btn_fav.textContent = "❤️ Login to Add Favourites";
+    btn_fav.disabled = true;
+    btn_fav.style.backgroundColor = "#ccc";
+  } else {
+    // Function to check and set button state
+    const updateButtonState = async () => {
+      try {
+        console.log('=== CHECKING FAVORITE STATUS ===');
+        console.log('Checking for meal ID:', info.id, 'Type:', typeof info.id);
+        
+        // Always fetch fresh data from server to ensure accuracy
+        const favs = await fetchFavourites();
+        console.log('Total favourites found:', favs.length);
+        
+        if (favs.length > 0) {
+          console.log('Sample favourite:', favs[0]);
+          console.log('All favourite meal IDs:', favs.map(fav => `${fav.mealId} (${typeof fav.mealId})`));
+        }
+        
+        // Check if current meal is in favourites using comprehensive comparison
+        let isFavourite = false;
+        let matchedFavourite = null;
+        
+        for (let fav of favs) {
+          const favMealId = fav.mealId;
+          const currentMealId = info.id;
+          
+          console.log(`Comparing favourite mealId: ${favMealId} (${typeof favMealId}) with current meal: ${currentMealId} (${typeof currentMealId})`);
+          
+          // Try multiple comparison methods to handle any type issues
+          if (favMealId == currentMealId) {
+            isFavourite = true;
+            matchedFavourite = fav;
+            console.log(`✅ MATCH FOUND with == comparison: ${favMealId} == ${currentMealId}`);
+            break;
+          } else if (String(favMealId) === String(currentMealId)) {
+            isFavourite = true;
+            matchedFavourite = fav;
+            console.log(`✅ MATCH FOUND with String comparison: "${String(favMealId)}" === "${String(currentMealId)}"`);
+            break;
+          } else if (parseInt(favMealId) === parseInt(currentMealId)) {
+            isFavourite = true;
+            matchedFavourite = fav;
+            console.log(`✅ MATCH FOUND with parseInt comparison: ${parseInt(favMealId)} === ${parseInt(currentMealId)}`);
+            break;
+          }
+        }
+        
+        console.log('=== FINAL RESULT ===');
+        console.log('Is meal in favourites?', isFavourite);
+        if (matchedFavourite) {
+          console.log('Matched favourite object:', matchedFavourite);
+        }
+        
+        // Set button state based on favorite status
+        if (isFavourite) {
+          btn_fav.textContent = "❤️ Remove from Favourites";
+          btn_fav.style.backgroundColor = "#dc3545"; // Bootstrap danger red
+          btn_fav.style.color = "white";
+          btn_fav.style.border = "1px solid #dc3545";
+          btn_fav.classList.add('btn-remove-fav');
+          btn_fav.classList.remove('btn-add-fav');
+          console.log('✅ Button configured for REMOVE - meal IS in favourites');
+        } else {
+          btn_fav.textContent = "❤️ Add to Favourites";
+          btn_fav.style.backgroundColor = "#28a745"; // Bootstrap success green
+          btn_fav.style.color = "white";
+          btn_fav.style.border = "1px solid #28a745";
+          btn_fav.classList.add('btn-add-fav');
+          btn_fav.classList.remove('btn-remove-fav');
+          console.log('ℹ️ Button configured for ADD - meal NOT in favourites');
+        }
+        
+        btn_fav.disabled = false;
+        console.log('=== BUTTON STATE SET COMPLETE ===');
+        return isFavourite;
+      } catch (error) {
+        console.error('Error checking favourites:', error);
+        btn_fav.textContent = "❤️ Error Loading Favourites";
+        btn_fav.style.backgroundColor = "#6c757d";
+        btn_fav.style.color = "white";
+        btn_fav.disabled = true;
+        return false;
+      }
+    };
+
+    // Set initial button state - this runs every time modal opens
+    console.log('🔄 Setting initial button state for modal...');
+    await updateButtonState();
 
     // Toggle favourite on click
-    btn_fav.addEventListener("click", function () {
-      isFavourite = !isFavourite;
-      if (isFavourite) {
-        favourites.push({
-          id: info.id,
-          title: info.title,
-          image: info.image,
-          nutrition: info.nutrition,
-          steps: steps
-        });
-        btn_fav.textContent = "❤️ Remove from Favourites";
-        btn_fav.style.backgroundColor = "#ff6f61";
-      } else {
-        favourites = favourites.filter(fav => fav.id !== info.id);
-        btn_fav.textContent = "❤️ Add to Favourites";
-        btn_fav.style.backgroundColor = "";
-      }
-      localStorage.setItem(favouritesKey, JSON.stringify(favourites));
-    });
+    btn_fav.addEventListener("click", async function () {
+      try {
+        // Disable button and show processing state
+        btn_fav.disabled = true;
+        const originalText = btn_fav.textContent;
+        btn_fav.textContent = "⏳ Processing...";
+        btn_fav.style.backgroundColor = "#6c757d";
+        
+        // Check current button state using classes for reliable detection
+        const isCurrentlyFavorite = btn_fav.classList.contains('btn-remove-fav');
+        console.log('Button click - Current state is favorite?', isCurrentlyFavorite);
 
-    const modal = new bootstrap.Modal(document.getElementById('mealModal'));
-    modal.show();
+        if (isCurrentlyFavorite) {
+          // Remove from favourites
+          console.log('🗑️ Attempting to REMOVE from favourites...');
+          const response = await fetch(`/FitWell/api/favourites/${info.id}`, {
+            method: 'DELETE'
+          });
+
+          if (response.ok) {
+            console.log('✅ Successfully removed from favourites');
+            // Update button state to ADD since it's no longer in favorites
+            btn_fav.textContent = "❤️ Add to Favourites";
+            btn_fav.style.backgroundColor = "#28a745";
+            btn_fav.style.color = "white";
+            btn_fav.style.border = "1px solid #28a745";
+            btn_fav.classList.add('btn-add-fav');
+            btn_fav.classList.remove('btn-remove-fav');
+          } else {
+            const errorData = await response.json();
+            console.error('❌ Error removing from favourites:', errorData);
+            alert('Error removing from favourites: ' + (errorData.error || 'Unknown error'));
+            // Restore original button state on error
+            btn_fav.textContent = originalText;
+            await updateButtonState();
+          }
+        } else {
+          // Add to favourites
+          console.log('➕ Attempting to ADD to favourites...');
+          const favouriteData = {
+            mealId: info.id,
+            mealName: info.title,
+            mealImage: info.image,
+            calories: getNutrient(info.nutrition, 'Calories').split(" ")[0],
+            protein: getNutrient(info.nutrition, 'Protein').split(" ")[0],
+            fat: getNutrient(info.nutrition, 'Fat').split(" ")[0],
+            carbs: getNutrient(info.nutrition, 'Carbohydrates')?.split(" ")[0] || 0
+          };
+          
+          console.log('Sending favourite data:', favouriteData);
+          
+          const response = await fetch('/FitWell/api/favourites', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(favouriteData)
+          });
+
+          if (response.ok) {
+            console.log('✅ Successfully added to favourites');
+            // Update button state to REMOVE since it's now in favorites
+            btn_fav.textContent = "❤️ Remove from Favourites";
+            btn_fav.style.backgroundColor = "#dc3545";
+            btn_fav.style.color = "white";
+            btn_fav.style.border = "1px solid #dc3545";
+            btn_fav.classList.add('btn-remove-fav');
+            btn_fav.classList.remove('btn-add-fav');
+          } else if (response.status === 409) {
+            // Conflict - already exists
+            console.log('⚠️ Meal already in favourites (409 conflict)');
+            // Update button to show it's already in favorites
+            btn_fav.textContent = "❤️ Remove from Favourites";
+            btn_fav.style.backgroundColor = "#dc3545";
+            btn_fav.style.color = "white";
+            btn_fav.style.border = "1px solid #dc3545";
+            btn_fav.classList.add('btn-remove-fav');
+            btn_fav.classList.remove('btn-add-fav');
+          } else {
+            const errorData = await response.json();
+            console.error('❌ Error adding to favourites:', errorData);
+            
+            // Check if error message indicates it already exists
+            if (errorData.error && errorData.error.toLowerCase().includes('already')) {
+              console.log('⚠️ Error indicates meal already in favourites');
+              btn_fav.textContent = "❤️ Remove from Favourites";
+              btn_fav.style.backgroundColor = "#dc3545";
+              btn_fav.style.color = "white";
+              btn_fav.style.border = "1px solid #dc3545";
+              btn_fav.classList.add('btn-remove-fav');
+              btn_fav.classList.remove('btn-add-fav');
+            } else {
+              alert('Error adding to favourites: ' + (errorData.error || 'Unknown error'));
+              // Restore original button state on error
+              btn_fav.textContent = originalText;
+              await updateButtonState();
+            }
+          }
+        }
+      } catch (error) {
+        console.error('❌ Network error toggling favourite:', error);
+        alert('Network error occurred. Please try again.');
+        // Refresh button state from server on network error
+        await updateButtonState();
+      } finally {
+        // Always re-enable button
+        btn_fav.disabled = false;
+        console.log('🔄 Button re-enabled');
+      }
+    });
   }
+
+  const modal = new bootstrap.Modal(document.getElementById('mealModal'));
+  modal.show();
 }
 
 document.getElementById("search-input").addEventListener("input", function () {
@@ -168,13 +378,15 @@ document.getElementById("search-input").addEventListener("input", function () {
   }
 });
 
-document.addEventListener("DOMContentLoaded", function () {
+document.addEventListener("DOMContentLoaded", async function () {
   const nav = document.querySelector(".navbar");
   const features = document.querySelectorAll(".card");
-  const isLoggedIn = localStorage.getItem("loggedIn");
+  
+  // Check authentication status from server
+  const isLoggedIn = await checkAuthStatus();
 
   // Check if user is logged in
-  if (isLoggedIn === "true") {
+  if (isLoggedIn) {
     document.body.classList.add("logged-in");
 
     // Show the hidden nav and quicklink items
@@ -218,11 +430,11 @@ document.addEventListener("DOMContentLoaded", function () {
     const href = link.getAttribute("href");
     // Check if the href contains the current page name or ends with it
     if (href && (href.includes(currentPage) || href.endsWith(currentPage) ||
-      (currentPage === "NutritionPlanner.html" && href.includes("NutritionPlanner.html")))) {
+      (currentPage === "MealSuggestion" && href.includes("MealSuggestion")))) {
       link.classList.add("active");
 
       // Add green highlight
-      if (currentPage === "NutritionPlanner.html") {
+      if (currentPage === "MealSuggestion") {
         link.classList.add("active-green");
       }
     }
@@ -231,24 +443,29 @@ document.addEventListener("DOMContentLoaded", function () {
   showInstructionMessage();
 });
 
-// Log out
+// Log out function - now only clears session on server side
 const btn_logout = document.querySelector("#btn_logout");
-btn_logout.addEventListener("click", logout);
+if (btn_logout) {
+  btn_logout.addEventListener("click", logout);
+}
 
-function logout() {
-  // Retain the 'mealFavourites' in localStorage, clear other data
-  const favourites = localStorage.getItem('mealFavourites');
-
-  // Clear all other data in localStorage
-  localStorage.clear();
-
-  // Restore the 'mealFavourites' back to localStorage
-  if (favourites) {
-    localStorage.setItem('mealFavourites', favourites);
+async function logout() {
+  try {
+    const response = await fetch('/FitWell/logout', {
+      method: 'POST'
+    });
+    
+    if (response.ok) {
+      // Redirect after successful logout
+      window.location.href = "/FitWell/Login";
+    } else {
+      console.error('Logout failed');
+      // Redirect anyway
+      window.location.href = "/FitWell/Login";
+    }
+  } catch (error) {
+    console.error('Error during logout:', error);
+    // Redirect anyway
+    window.location.href = "/FitWell/Login";
   }
-
-  // Redirect after a slight delay
-  setTimeout(function () {
-    window.location.href = "Login.html";
-  }, 500);
 }

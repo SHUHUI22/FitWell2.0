@@ -1,0 +1,25 @@
+<!-- Head -->
+<%- include("partials/head",{title: "Calculator" , cssFile: "Calculator.css" }) %>
+
+    <!-- Navigation bar -->
+    <%- include("partials/nav") %>
+
+    <!-- Contains the web page document’s main content  -->
+  <main>
+    <div class="container pb-3">
+      <h2>Nutrition Calculator</h2>
+      <div class="input-group border border-1 border-light rounded">
+        <input id="search-input" type="text" class="form-control" placeholder="eg. 1 cup green tea">
+        <button id="btn-analyze" class="btn btn-success">Analyze</button>
+      </div>
+      <div id="output">
+        <div class="d-flex flex-column justify-content-center align-items-center">
+          <img class="img-fluid" src="/images/calculate.png" alt="Search illustration">
+          <p class="text-muted">Enter a dish name or ingredients to search for nutrition information.</p>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer -->
+        <%- include("partials/footer", {scriptFile:"Calculator_script.js"}) %>
