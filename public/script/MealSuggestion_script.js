@@ -171,66 +171,199 @@ async function showRecipeSteps(info) {
     btn_fav.disabled = true;
     btn_fav.style.backgroundColor = "#ccc";
   } else {
-    // Check if meal is already in favorites and update button
-    let isFavourite = false;
+    // Function to check and set button state
+    const updateButtonState = async () => {
+      try {
+        console.log('=== CHECKING FAVORITE STATUS ===');
+        console.log('Checking for meal ID:', info.id, 'Type:', typeof info.id);
+        
+        // Always fetch fresh data from server to ensure accuracy
+        const favs = await fetchFavourites();
+        console.log('Total favourites found:', favs.length);
+        
+        if (favs.length > 0) {
+          console.log('Sample favourite:', favs[0]);
+          console.log('All favourite meal IDs:', favs.map(fav => `${fav.mealId} (${typeof fav.mealId})`));
+        }
+        
+        // Check if current meal is in favourites using comprehensive comparison
+        let isFavourite = false;
+        let matchedFavourite = null;
+        
+        for (let fav of favs) {
+          const favMealId = fav.mealId;
+          const currentMealId = info.id;
+          
+          console.log(`Comparing favourite mealId: ${favMealId} (${typeof favMealId}) with current meal: ${currentMealId} (${typeof currentMealId})`);
+          
+          // Try multiple comparison methods to handle any type issues
+          if (favMealId == currentMealId) {
+            isFavourite = true;
+            matchedFavourite = fav;
+            console.log(`✅ MATCH FOUND with == comparison: ${favMealId} == ${currentMealId}`);
+            break;
+          } else if (String(favMealId) === String(currentMealId)) {
+            isFavourite = true;
+            matchedFavourite = fav;
+            console.log(`✅ MATCH FOUND with String comparison: "${String(favMealId)}" === "${String(currentMealId)}"`);
+            break;
+          } else if (parseInt(favMealId) === parseInt(currentMealId)) {
+            isFavourite = true;
+            matchedFavourite = fav;
+            console.log(`✅ MATCH FOUND with parseInt comparison: ${parseInt(favMealId)} === ${parseInt(currentMealId)}`);
+            break;
+          }
+        }
+        
+        console.log('=== FINAL RESULT ===');
+        console.log('Is meal in favourites?', isFavourite);
+        if (matchedFavourite) {
+          console.log('Matched favourite object:', matchedFavourite);
+        }
+        
+        // Set button state based on favorite status
+        if (isFavourite) {
+          btn_fav.textContent = "❤️ Remove from Favourites";
+          btn_fav.style.backgroundColor = "#dc3545"; // Bootstrap danger red
+          btn_fav.style.color = "white";
+          btn_fav.style.border = "1px solid #dc3545";
+          btn_fav.classList.add('btn-remove-fav');
+          btn_fav.classList.remove('btn-add-fav');
+          console.log('✅ Button configured for REMOVE - meal IS in favourites');
+        } else {
+          btn_fav.textContent = "❤️ Add to Favourites";
+          btn_fav.style.backgroundColor = "#28a745"; // Bootstrap success green
+          btn_fav.style.color = "white";
+          btn_fav.style.border = "1px solid #28a745";
+          btn_fav.classList.add('btn-add-fav');
+          btn_fav.classList.remove('btn-remove-fav');
+          console.log('ℹ️ Button configured for ADD - meal NOT in favourites');
+        }
+        
+        btn_fav.disabled = false;
+        console.log('=== BUTTON STATE SET COMPLETE ===');
+        return isFavourite;
+      } catch (error) {
+        console.error('Error checking favourites:', error);
+        btn_fav.textContent = "❤️ Error Loading Favourites";
+        btn_fav.style.backgroundColor = "#6c757d";
+        btn_fav.style.color = "white";
+        btn_fav.disabled = true;
+        return false;
+      }
+    };
 
-    try {
-      const favs = await fetchFavourites();
-      isFavourite = favs.some(fav => fav.mealId == info.id);
-      btn_fav.textContent = isFavourite ? "❤️ Remove from Favourites" : "❤️ Add to Favourites";
-      btn_fav.style.backgroundColor = isFavourite ? "#ff6f61" : "";
-      btn_fav.disabled = false;
-    } catch (error) {
-      console.error('Error checking favourites:', error);
-      btn_fav.textContent = "❤️ Error Loading Favourites";
-      btn_fav.disabled = true;
-    }
+    // Set initial button state - this runs every time modal opens
+    console.log('🔄 Setting initial button state for modal...');
+    await updateButtonState();
 
     // Toggle favourite on click
     btn_fav.addEventListener("click", async function () {
       try {
-        if (isFavourite) {
+        // Disable button and show processing state
+        btn_fav.disabled = true;
+        const originalText = btn_fav.textContent;
+        btn_fav.textContent = "⏳ Processing...";
+        btn_fav.style.backgroundColor = "#6c757d";
+        
+        // Check current button state using classes for reliable detection
+        const isCurrentlyFavorite = btn_fav.classList.contains('btn-remove-fav');
+        console.log('Button click - Current state is favorite?', isCurrentlyFavorite);
+
+        if (isCurrentlyFavorite) {
           // Remove from favourites
+          console.log('🗑️ Attempting to REMOVE from favourites...');
           const response = await fetch(`/FitWell/api/favourites/${info.id}`, {
             method: 'DELETE'
           });
 
           if (response.ok) {
-            isFavourite = false;
+            console.log('✅ Successfully removed from favourites');
+            // Update button state to ADD since it's no longer in favorites
             btn_fav.textContent = "❤️ Add to Favourites";
-            btn_fav.style.backgroundColor = "";
+            btn_fav.style.backgroundColor = "#28a745";
+            btn_fav.style.color = "white";
+            btn_fav.style.border = "1px solid #28a745";
+            btn_fav.classList.add('btn-add-fav');
+            btn_fav.classList.remove('btn-remove-fav');
           } else {
             const errorData = await response.json();
+            console.error('❌ Error removing from favourites:', errorData);
             alert('Error removing from favourites: ' + (errorData.error || 'Unknown error'));
+            // Restore original button state on error
+            btn_fav.textContent = originalText;
+            await updateButtonState();
           }
         } else {
           // Add to favourites
+          console.log('➕ Attempting to ADD to favourites...');
+          const favouriteData = {
+            mealId: info.id,
+            mealName: info.title,
+            mealImage: info.image,
+            calories: getNutrient(info.nutrition, 'Calories').split(" ")[0],
+            protein: getNutrient(info.nutrition, 'Protein').split(" ")[0],
+            fat: getNutrient(info.nutrition, 'Fat').split(" ")[0],
+            carbs: getNutrient(info.nutrition, 'Carbohydrates')?.split(" ")[0] || 0
+          };
+          
+          console.log('Sending favourite data:', favouriteData);
+          
           const response = await fetch('/FitWell/api/favourites', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              mealId: info.id,
-              mealName: info.title,
-              mealImage: info.image,
-              calories: getNutrient(info.nutrition, 'Calories').split(" ")[0],
-              protein: getNutrient(info.nutrition, 'Protein').split(" ")[0],
-              fat: getNutrient(info.nutrition, 'Fat').split(" ")[0],
-              carbs: getNutrient(info.nutrition, 'Carbohydrates')?.split(" ")[0] || 0
-            })
+            body: JSON.stringify(favouriteData)
           });
 
           if (response.ok) {
-            isFavourite = true;
+            console.log('✅ Successfully added to favourites');
+            // Update button state to REMOVE since it's now in favorites
             btn_fav.textContent = "❤️ Remove from Favourites";
-            btn_fav.style.backgroundColor = "#ff6f61";
+            btn_fav.style.backgroundColor = "#dc3545";
+            btn_fav.style.color = "white";
+            btn_fav.style.border = "1px solid #dc3545";
+            btn_fav.classList.add('btn-remove-fav');
+            btn_fav.classList.remove('btn-add-fav');
+          } else if (response.status === 409) {
+            // Conflict - already exists
+            console.log('⚠️ Meal already in favourites (409 conflict)');
+            // Update button to show it's already in favorites
+            btn_fav.textContent = "❤️ Remove from Favourites";
+            btn_fav.style.backgroundColor = "#dc3545";
+            btn_fav.style.color = "white";
+            btn_fav.style.border = "1px solid #dc3545";
+            btn_fav.classList.add('btn-remove-fav');
+            btn_fav.classList.remove('btn-add-fav');
           } else {
             const errorData = await response.json();
-            alert('Error adding to favourites: ' + (errorData.error || 'Unknown error'));
+            console.error('❌ Error adding to favourites:', errorData);
+            
+            // Check if error message indicates it already exists
+            if (errorData.error && errorData.error.toLowerCase().includes('already')) {
+              console.log('⚠️ Error indicates meal already in favourites');
+              btn_fav.textContent = "❤️ Remove from Favourites";
+              btn_fav.style.backgroundColor = "#dc3545";
+              btn_fav.style.color = "white";
+              btn_fav.style.border = "1px solid #dc3545";
+              btn_fav.classList.add('btn-remove-fav');
+              btn_fav.classList.remove('btn-add-fav');
+            } else {
+              alert('Error adding to favourites: ' + (errorData.error || 'Unknown error'));
+              // Restore original button state on error
+              btn_fav.textContent = originalText;
+              await updateButtonState();
+            }
           }
         }
       } catch (error) {
-        console.error('Error toggling favourite:', error);
+        console.error('❌ Network error toggling favourite:', error);
         alert('Network error occurred. Please try again.');
+        // Refresh button state from server on network error
+        await updateButtonState();
+      } finally {
+        // Always re-enable button
+        btn_fav.disabled = false;
+        console.log('🔄 Button re-enabled');
       }
     });
   }
