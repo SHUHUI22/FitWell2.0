@@ -54,6 +54,13 @@ app.use((req, res, next) => {
     next();
 });
 
+const requireLogin = (req, res, next) => {
+    if (!req.session.userId) {
+        return res.redirect('/FitWell/Login')
+    }
+    next();
+}
+
 // Import routes
 const LandingPageRoute = require("./routes/LandingPageRoute");
 const authRoute = require("./routes/authRoute");
@@ -68,11 +75,11 @@ const AuthStatusRoute = require("./routes/AuthStatusRoute");
 // Use routes
 app.use('/FitWell', LandingPageRoute);
 app.use('/FitWell', authRoute);
-app.use('/FitWell', NutritionPlannerRoute);
-app.use('/FitWell', MealSuggestionRoute);
-app.use('/FitWell', MealLoggingRoute);
-app.use('/FitWell', FavouriteMealRoute);
-app.use('/FitWell', CalculatorRoute);
+app.use('/FitWell', requireLogin, NutritionPlannerRoute);
+app.use('/FitWell', requireLogin, MealSuggestionRoute);
+app.use('/FitWell', requireLogin, MealLoggingRoute);
+app.use('/FitWell', requireLogin, FavouriteMealRoute);
+app.use('/FitWell', requireLogin, CalculatorRoute);
 app.use('/FitWell', AuthStatusRoute);
 // ...
 

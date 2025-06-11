@@ -1,5 +1,5 @@
 // Spoonacular API key 
-const apiKey = "82f7eda70d74498a882133bf6395e55f";
+const apiKey = "931113120c0c4a369daaa8e9bf92f571";
 
 // Set today's date 
 const today = new Date().toISOString().split('T')[0];
@@ -490,55 +490,8 @@ function showNotification(message, type = 'info') {
     }, 5000);
 }
 
-// Set active navigation state
-function setActiveNavigation() {
-    const currentPage = window.location.pathname.split("/").pop();
-    const navLinks = document.querySelectorAll(".nav-link");
-
-    navLinks.forEach(link => {
-        link.classList.remove("active");
-        const href = link.getAttribute("href");
-        if (href && (href.includes(currentPage) || href.endsWith(currentPage) ||
-            (currentPage === "MealLogging" && href.includes("MealLogging")))) {
-            link.classList.add("active");
-        }
-    });
-}
-
-// Logout function
-function logout() {
-    fetch('/FitWell/logout', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        }
-    })
-    .then(response => {
-        if (response.ok || response.status === 404) {
-            // Redirect to login page
-            window.location.href = "/FitWell/login";
-        } else {
-            throw new Error('Logout failed');
-        }
-    })
-    .catch(error => {
-        console.error('Logout error:', error);
-        // Redirect anyway for better user experience
-        window.location.href = "/FitWell/login";
-    });
-}
-
 // Event listeners setup
 document.addEventListener("DOMContentLoaded", function () {
-    // Logout button
-    const btnLogout = document.querySelector("#btn_logout");
-    if (btnLogout) {
-        btnLogout.addEventListener("click", function(e) {
-            e.preventDefault();
-            logout();
-        });
-    }
-
     // Search input enter key
     const searchInput = document.getElementById("search-input");
     if (searchInput) {

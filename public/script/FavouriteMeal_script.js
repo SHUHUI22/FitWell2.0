@@ -1,28 +1,4 @@
 document.addEventListener("DOMContentLoaded", function () {
-    const nav = document.querySelector(".navbar");
-    const features = document.querySelectorAll(".card");
-
-    // Check if user is logged in (using session-based auth instead of localStorage)
-    checkAuthStatus();
-
-    // Automatically highlight the correct nav link based on current page
-    const currentPage = window.location.pathname.split("/").pop();
-    const navLinks = document.querySelectorAll(".nav-link");
-
-    navLinks.forEach(link => {
-        const href = link.getAttribute("href");
-        // Check if the href contains the current page name or ends with it
-        if (href && (href.includes(currentPage) || href.endsWith(currentPage) ||
-            (currentPage === "NutritionPlanner.html" && href.includes("NutritionPlanner.html")))) {
-            link.classList.add("active");
-
-            // Add green highlight
-            if (currentPage === "NutritionPlanner.html") {
-                link.classList.add("active-green");
-            }
-        }
-    });
-
     loadFavourites();
 });
 
@@ -273,20 +249,6 @@ function showNotification(message, type = 'info') {
         }
     }, 3000);
 }
-
-// Log out function - uses your existing logout route
-function logout() {
-    // Use your existing GET logout route
-    window.location.href = "/FitWell/Logout";
-}
-
-// Attach logout handler
-document.addEventListener('DOMContentLoaded', function() {
-    const btnLogout = document.querySelector("#btn_logout");
-    if (btnLogout) {
-        btnLogout.addEventListener("click", logout);
-    }
-});
 
 // Make functions available globally for other scripts
 window.addToFavourites = addToFavourites;
