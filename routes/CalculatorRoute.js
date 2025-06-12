@@ -3,6 +3,6 @@ const router = express.Router();
 const CalculatorController = require('../controllers/CalculatorController');
 
 // GET route to render Favourite Meals page
-router.get('/Calculator', CalculatorController.getCalculator);
+router.get('/NutritionPlanner/Calculator', CalculatorController.getCalculator);
 
 module.exports = router;

@@ -1,17 +1,17 @@
 document.getElementById("btn-meal-suggestion").addEventListener("click", function(){
-    window.location.href = "/FitWell/MealSuggestion";
+    window.location.href = "/FitWell/NutritionPlanner/MealSuggestion";
 });
 
 document.getElementById("btn-myfav").addEventListener("click", function(){
-    window.location.href = "/FitWell/FavouriteMeal";
+    window.location.href = "/FitWell/NutritionPlanner/FavouriteMeal";
 });
 
 document.getElementById("btn-log").addEventListener("click", function(){
-    window.location.href = "/FitWell/MealLogging";
+    window.location.href = "/FitWell/NutritionPlanner/MealLogging";
 });
 
 document.getElementById("btn-cal").addEventListener("click", function(){
-    window.location.href = "/FitWell/Calculator";
+    window.location.href = "/FitWell/NutritionPlanner/Calculator";
 });
 
 

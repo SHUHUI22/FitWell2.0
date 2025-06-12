@@ -3,7 +3,7 @@ const router = express.Router();
 const FavouriteMealController = require('../controllers/FavouriteMealController');
 
 // GET route to render the Favourite Meal page
-router.get('/FavouriteMeal', (req, res) => {
+router.get('/NutritionPlanner/FavouriteMeal', (req, res) => {
     const isLoggedIn = req.session.userId ? true : false;
     
     res.render('FavouriteMeal', {

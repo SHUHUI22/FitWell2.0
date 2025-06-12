@@ -224,7 +224,7 @@ async function confirmLogMeal() {
     console.log('Payload being sent:', payload);
 
     try {
-        const response = await fetch('/FitWell/MealLogging/log', {
+        const response = await fetch('/FitWell/NutritionPlanner/MealLogging/log', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -291,7 +291,7 @@ async function loadMealsForDate(date) {
     }
 
     try {
-        const response = await fetch(`/FitWell/MealLogging/meals?date=${encodeURIComponent(date)}`);
+        const response = await fetch(`/FitWell/NutritionPlanner/MealLogging/meals?date=${encodeURIComponent(date)}`);
         
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
@@ -401,7 +401,7 @@ async function editMealServings(mealId, currentServings) {
     }
 
     try {
-        const response = await fetch(`/FitWell/MealLogging/meal/${mealId}`, {
+        const response = await fetch(`/FitWell/NutritionPlanner/MealLogging/meal/${mealId}`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
@@ -434,7 +434,7 @@ async function deleteMeal(mealId) {
     }
 
     try {
-        const response = await fetch(`/FitWell/MealLogging/meal/${mealId}`, {
+        const response = await fetch(`/FitWell/NutritionPlanner/MealLogging/meal/${mealId}`, {
             method: 'DELETE'
         });
 
