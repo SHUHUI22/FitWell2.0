@@ -111,8 +111,7 @@ async function updateProfile(req, res) {
             };
         }
 
-        await user.save(); // saves everything, including weightHistory
-
+        await user.save();
         res.redirect("/FitWell/Profile");
 
     } catch (err) {

@@ -61,40 +61,39 @@
         </div>
 
        <!-- Change Password Modal -->
-<div class="modal fade" id="changePasswordModal" tabindex="-1" aria-labelledby="changePasswordLabel" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="changePasswordLabel">Change Password</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      <div class="modal fade" id="changePasswordModal" tabindex="-1" aria-labelledby="changePasswordLabel" aria-hidden="true">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="changePasswordLabel">Change Password</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+              <form id="changePasswordForm" method="POST" action="/FitWell/changePassword">
+                <div class="mb-3">
+                  <label for="currentPassword" class="form-label">Current Password</label>
+                  <input type="password" class="form-control" id="currentPassword" name="currentPassword" required>
+                  <% if (typeof passwordError !== 'undefined') { %>
+                    <div class="text-danger mb-2" id="currentPasswordError"><%= passwordError %></div>
+                    <input type="hidden" id="showChangePasswordModal" value="true">
+                  <% } %>
+                </div>
+                <div class="mb-3">
+                  <label for="newPassword" class="form-label">New Password</label>
+                  <input type="password" class="form-control" id="newPassword" name="newPassword" required>
+                </div>
+                <div id="newPasswordError" class="text-danger d-none">Password must contain at least 8 characters, including uppercase, lowercase, and a number.</div>
+                <div class="mb-3">
+                  <label for="confirmPassword" class="form-label">Confirm New Password</label>
+                  <input type="password" class="form-control" id="confirmPassword" name="confirmPassword" required>
+                </div>
+                <div id="confirmNewPasswordError" class="text-danger d-none">Passwords do not match.</div>
+                <button type="submit" class="btn-primary" id="saveNewPassword">Update Password</button>
+              </form>
+            </div>
+          </div>
+        </div>
       </div>
-      <div class="modal-body">
-        <form id="changePasswordForm" method="POST" action="/FitWell/changePassword">
-          <div class="mb-3">
-            <label for="currentPassword" class="form-label">Current Password</label>
-            <input type="password" class="form-control" id="currentPassword" name="currentPassword" required>
-            <% if (typeof passwordError !== 'undefined') { %>
-              <div class="text-danger mb-2" id="currentPasswordError"><%= passwordError %></div>
-              <input type="hidden" id="showChangePasswordModal" value="true">
-            <% } %>
-          </div>
-          <div class="mb-3">
-            <label for="newPassword" class="form-label">New Password</label>
-            <input type="password" class="form-control" id="newPassword" name="newPassword" required>
-          </div>
-          <div id="newPasswordError" class="text-danger d-none">Password must contain at least 8 characters, including uppercase, lowercase, and a number.</div>
-          <div class="mb-3">
-            <label for="confirmPassword" class="form-label">Confirm New Password</label>
-            <input type="password" class="form-control" id="confirmPassword" name="confirmPassword" required>
-          </div>
-          <div id="confirmNewPasswordError" class="text-danger d-none">Passwords do not match.</div>
-          <button type="submit" class="btn-primary" id="saveNewPassword">Update Password</button>
-        </form>
-      </div>
-    </div>
-  </div>
-</div>
-
 
 
       <!-- Update Profile Modal -->
@@ -108,11 +107,15 @@
             <div class="modal-body">
               <form method="POST" action="/FitWell/Profile" enctype="multipart/form-data">
                 <div class="mb-3">
-                  <% if (user.profilePic && user.profilePic.data) { %>
-                  <img src="data:<%= user.profilePic.contentType %>;base64,<%= user.profilePic.data.toString('base64') %>" class="avatar" id="profilePic"/>
-                  <% } else { %>
-                    <img src="/images/signup&login.jpg" class="avatar" id="profilePic"/>
-                  <% } %>
+                   <% if (user.profilePic && user.profilePic.data) { %>
+                      <img src="data:<%= user.profilePic.contentType %>;base64,<%= user.profilePic.data.toString('base64') %>" 
+                          class="avatar mb-2" 
+                          id="modalProfilePicPreview" />
+                    <% } else { %>
+                      <img src="/images/signup&login.jpg" 
+                          class="avatar mb-2" 
+                          id="modalProfilePicPreview" />
+                    <% } %>
                 </div>
                 <div class="mb-3">
                   <label for="modalUsername" class="form-label">Username</label>
@@ -156,42 +159,44 @@
         </div>
       </div>
 
-<!-- Delete Account Confirmation Modal -->
-<div class="modal fade" id="deleteAccountModal" tabindex="-1" aria-labelledby="deleteAccountLabel" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content">
 
-      <div class="modal-header">
-        <h5 class="modal-title" id="deleteAccountLabel">Confirm Account Deletion</h5>
+      <!-- Delete Account Confirmation Modal -->
+      <div class="modal fade" id="deleteAccountModal" tabindex="-1" aria-labelledby="deleteAccountLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+          <div class="modal-content">
+
+            <div class="modal-header">
+              <h5 class="modal-title" id="deleteAccountLabel">Confirm Account Deletion</h5>
+            </div>
+
+            <div class="modal-body">
+              <p>Are you sure you want to permanently delete your account? This action cannot be undone.</p>
+            </div>
+
+          <!-- Wrap BOTH buttons in a flex container -->
+      <!-- Flex container for centered, equally sized buttons with a gap -->
+      <div class="d-flex justify-content-center gap-4 w-100">
+        <!-- Cancel button -->
+        <button type="button" class="btn btn-secondary flex-fill rounded-5" style="max-width: 150px;" data-bs-dismiss="modal">
+          Cancel
+        </button>
+
+        <!-- Delete Account form + button -->
+        <form method="POST" action="/FitWell/Profile/DeleteAccount" class="d-inline flex-fill" style="max-width: 150px;">
+          <button type="submit" class="btn btn-danger w-100 rounded-5">
+            Delete Account
+          </button>
+        </form>
+      </div>
+          </div>
+        </div>
       </div>
 
-      <div class="modal-body">
-        <p>Are you sure you want to permanently delete your account? This action cannot be undone.</p>
+      
+      <div id="profile-flags"
+          data-password-error="<%= passwordError ? 'true' : 'false' %>"
+          data-password-success="<%= passwordChangedSuccess ? 'true' : 'false' %>">
       </div>
-
-    <!-- Wrap BOTH buttons in a flex container -->
-<!-- Flex container for centered, equally sized buttons with a gap -->
-<div class="d-flex justify-content-center gap-4 w-100">
-  <!-- Cancel button -->
-  <button type="button" class="btn btn-secondary flex-fill rounded-5" style="max-width: 150px;" data-bs-dismiss="modal">
-    Cancel
-  </button>
-
-  <!-- Delete Account form + button -->
-  <form method="POST" action="/FitWell/Profile/DeleteAccount" class="d-inline flex-fill" style="max-width: 150px;">
-    <button type="submit" class="btn btn-danger w-100 rounded-5">
-      Delete Account
-    </button>
-  </form>
-</div>
-    </div>
-  </div>
-</div>
-
-<div id="profile-flags"
-     data-password-error="<%= passwordError ? 'true' : 'false' %>"
-     data-password-success="<%= passwordChangedSuccess ? 'true' : 'false' %>">
-</div>
 
 
       </main>
