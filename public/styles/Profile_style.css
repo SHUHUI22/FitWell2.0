@@ -206,6 +206,10 @@ button.delete {
   margin-top: 2rem;
 }
 
+.btn-secondary{
+  width:80px;
+}
+
 /* Error message styling */
 .error-message {
   color: red;
