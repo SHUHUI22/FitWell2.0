@@ -29,6 +29,9 @@ app.use(express.static(path.join(__dirname,'public')));
 // To parse form data in POST request body:
 app.use(express.urlencoded({ extended: true })); 
 
+// To parse JSON data in POST request body:
+app.use(express.json());
+
 // Session middleware
 const session = require("express-session");
 const MongoStore = require("connect-mongo");
@@ -51,18 +54,41 @@ app.use((req, res, next) => {
     next();
 });
 
+
 app.use(express.json());
+
+const requireLogin = (req, res, next) => {
+    if (!req.session.userId) {
+        return res.redirect('/FitWell/Login')
+    }
+    next();
+}
+
 
 // Import routes
 const LandingPageRoute = require("./routes/LandingPageRoute");
 const authRoute = require("./routes/authRoute");
 const ProfileRoute = require("./routes/ProfileRoute");
+const NutritionPlannerRoute = require("./routes/NutritionPlannerRoute");
+const MealSuggestionRoute = require("./routes/MealSuggestionRoute");
+const MealLoggingRoute = require("./routes/MealLoggingRoute");
+const FavouriteMealRoute = require("./routes/FavouriteMealRoute");
+const CalculatorRoute = require("./routes/CalculatorRoute");
+const AuthStatusRoute = require("./routes/AuthStatusRoute");
+
 // ...
 
 // Use routes
 app.use('/FitWell', LandingPageRoute);
 app.use('/FitWell', authRoute);
-app.use('/FitWell', ProfileRoute);
+app.use('/FitWell', requireLogin, ProfileRoute);
+app.use('/FitWell', requireLogin, NutritionPlannerRoute);
+app.use('/FitWell', requireLogin, MealSuggestionRoute);
+app.use('/FitWell', requireLogin, MealLoggingRoute);
+app.use('/FitWell', requireLogin, FavouriteMealRoute);
+app.use('/FitWell', requireLogin, CalculatorRoute);
+app.use('/FitWell', AuthStatusRoute);
+
 // ...
 
 

@@ -1,0 +1,55 @@
+<!-- Head -->
+<%- include("partials/head",{title: "Meal Suggestion" , cssFile: "MealSuggestion_style.css" }) %>
+
+    <!-- Navigation bar -->
+    <%- include("partials/nav") %>
+
+  <!-- Contains the web page document’s main content  -->
+  <main>
+    <div class="container">
+      <h2>Meal Suggestions</h2>
+      <div class="input-group border border-1 border-light rounded">
+        <input id="search-input" type="text" class="form-control" placeholder="eg. chicken">
+        <button id="filter" type="button" class="btn dropdown-toggle" data-bs-toggle="dropdown">
+          Select your goal (Optional)
+        </button>
+        <ul class="dropdown-menu">
+          <li><a class="dropdown-item" href="#" data-value="none">None</a></li>
+          <li><a class="dropdown-item" href="#" data-value="weight-loss">Weight Loss</a></li>
+          <li><a class="dropdown-item" href="#" data-value="muscle-gain">Muscle gain </a></li>
+          <li><a class="dropdown-item" href="#" data-value="maintenance">Maintenance</a></li>
+        </ul>
+        <button id="btn-search" class="btn btn-success">Search</button>
+      </div>
+
+      <div id="search-result" class="container">
+        <div class="d-flex flex-column justify-content-center align-items-center">
+          <img class="img-fluid" src="/images/search.png" alt="Search illustration">
+          <p class="text-muted">Please enter a meal keyword and click <strong>"Search"</strong> to see results.</p>
+        </div>
+      </div>
+
+      <!-- Modal -->
+      <div class="modal fade" id="mealModal" tabindex="-1" aria-labelledby="mealModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg p-4">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="mealModalLabel"></h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center" id="modal-steps">
+              <!-- Content filled by JavaScript -->
+            </div>
+            <div class="modal-footer justify-content-center">
+              <button class="btn btn-outline-danger" id="btn-fav">❤️ Add to Favourites</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- Footer -->
+        <%- include("partials/footer", {scriptFile:"MealSuggestion_script.js"}) %>
