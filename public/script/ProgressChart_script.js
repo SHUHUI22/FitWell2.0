@@ -581,9 +581,8 @@ function initializeWeightProgressChart() {
         return;
     }
     
-    // Get target weight from the page
-    const targetWeightElement = document.getElementById('target-weight');
-    const targetWeight = targetWeightElement ? parseFloat(targetWeightElement.textContent) : 50;
+    // Get target weight
+    const targetWeight = JSON.parse(ctx.getAttribute('target-weight') || '[]');
 
     // Ensure targetWeight is valid
     if (isNaN(targetWeight)) {
