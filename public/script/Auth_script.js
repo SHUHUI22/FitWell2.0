@@ -41,8 +41,14 @@ leftSide.addEventListener('mouseleave', () => {
      }
  }
 
- passwordInput.addEventListener("input", validatePassword);
- confirmPasswordInput.addEventListener("input", validateConfirmPassword);
+if(passwordInput && passwordError){
+    passwordInput.addEventListener("input", validatePassword);
+}
+
+if(confirmPasswordInput && confirmPasswordError){
+    confirmPasswordInput.addEventListener("input", validateConfirmPassword);
+}
+
 
  const params = new URLSearchParams(window.location.search);
  if(params.get("error") === "exists"){
@@ -52,3 +58,44 @@ leftSide.addEventListener('mouseleave', () => {
             text: 'Please use a different email/login to your account.',
         });
  }
+ else if (params.get("error") === "usernotfound") {
+    Swal.fire({
+        icon: 'error',
+        title: 'Email not found',
+        text: 'No account with this email. Please sign up.',
+    });
+}
+else if (params.get("error") === "wrongpassword") {
+    Swal.fire({
+        icon: 'error',
+        title: 'Incorrect Password',
+        text: 'Please try again.',
+    });
+} else if (params.get("success") === "registered") {
+    Swal.fire({
+        icon: 'success',
+        title: 'Registration Successful',
+        text: 'You can now log in!',
+    });
+}
+else if (params.get("success") === "resetSent") {
+        Swal.fire({
+            icon: "success",
+            title: "Reset Link Sent",
+            text: "Please check your email for the password reset link.",
+        });
+}
+else if (params.get("error") === "expired") {
+        Swal.fire({
+            icon: "error",
+            title: "Reset Link Expired",
+            text: "Password reset link is invalid or has expired.Please try again.",
+        });
+}
+else if (params.get("success") === "resetSuccess") {
+        Swal.fire({
+            icon: "success",
+            title: "Password Reset Successfully",
+            text: "Your password has been successfully updated. You can now login.",
+        });
+}
