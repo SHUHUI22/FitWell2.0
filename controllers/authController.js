@@ -47,7 +47,11 @@ async function signUpUser(req, res) {
             height,
             weight,
             targetWeight,
-            gender
+            gender,
+            weightHistory: [{
+                weight,
+                date: new Date()
+            }]
         });
 
         await newUser.save();
@@ -78,6 +82,7 @@ async function loginUser(req, res) {
 
         req.session.userId = user._id;
         req.session.username = user.username;
+        req.session.email= user.email;
 
         return res.redirect("/FitWell");
     }

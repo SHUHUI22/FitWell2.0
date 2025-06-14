@@ -1,4 +1,4 @@
-// spoonacular API key 
+// Spoonacular API key 
 const apiKey = "931113120c0c4a369daaa8e9bf92f571";
 
 // Set today's date 
@@ -7,6 +7,20 @@ document.getElementById('log-date').value = today;
 
 let selectedMeal = null;
 let selectedCategory = null;
+
+// Load meals when page loads and when date changes
+document.addEventListener('DOMContentLoaded', function () {
+    loadMealsForDate(today);
+    
+    // Add event listener for date change
+    document.getElementById('log-date').addEventListener('change', function() {
+        const selectedDate = this.value;
+        loadMealsForDate(selectedDate);
+    });
+
+    // Set up navigation active state
+    setActiveNavigation();
+});
 
 // Open modal on 'Log Meal' button click
 document.querySelectorAll('.btn-log').forEach(btn => {
@@ -20,12 +34,14 @@ function openModal() {
     const modal = new bootstrap.Modal(document.getElementById('mealModal'));
     modal.show();
 
+    // Reset modal content
     document.getElementById("search-input").value = "";
     document.getElementById("search-results").innerHTML = "";
-    document.getElementById("serving-section").classList.add("hidden");
+    document.getElementById("serving-section").classList.add("d-none");
+    selectedMeal = null;
 }
 
-// Search meal
+// Search meal using Spoonacular API
 async function searchMeal() {
     const query = document.getElementById("search-input").value.trim();
     const resultsDiv = document.getElementById("search-results");
@@ -34,132 +50,232 @@ async function searchMeal() {
         resultsDiv.innerHTML = "";
         return;
     }
+
     resultsDiv.innerHTML = "<p>Searching...</p>";
 
     try {
-        const response = await fetch(`https://api.spoonacular.com/recipes/complexSearch?query=${query}&number=5&apiKey=${apiKey}`);
+        const response = await fetch(`https://api.spoonacular.com/recipes/complexSearch?query=${encodeURIComponent(query)}&number=10&addRecipeInformation=true&apiKey=${apiKey}`);
+        
+        if (!response.ok) {
+            throw new Error(`API Error: ${response.status}`);
+        }
+
         const data = await response.json();
 
         if (!data.results || data.results.length === 0) {
-            resultsDiv.innerHTML = "<p>No meals found.</p>";
+            resultsDiv.innerHTML = "<p>No meals found. Try a different search term.</p>";
             return;
         }
 
         // Display search results
         resultsDiv.innerHTML = data.results.map(meal => `
-          <div class="card mb-2 shadow-sm meal-option" style="cursor: pointer;" onclick="selectMeal(${meal.id}, '${meal.title.replace(/'/g, "\\'")}')">
+          <div class="card mb-2 shadow-sm meal-option" style="cursor: pointer;" onclick="selectMeal(${meal.id}, '${escapeHtml(meal.title)}')">
             <div class="card-body d-flex align-items-center">
-              <img src="${meal.image}" alt="${meal.title}" class="img-thumbnail me-3" style="width: 70px; height: 70px; object-fit: cover;" />
-              <h5 class="card-title mb-0">${meal.title}</h5>
+              <img src="${meal.image || `https://spoonacular.com/recipeImages/${meal.id}-312x231.jpg`}" 
+                   alt="${escapeHtml(meal.title)}" 
+                   class="img-thumbnail me-3" 
+                   style="width: 70px; height: 70px; object-fit: cover;"
+                   onerror="this.src='https://via.placeholder.com/70x70?text=No+Image'" />
+              <div>
+                <h5 class="card-title mb-1">${escapeHtml(meal.title)}</h5>
+                <small class="text-muted">Ready in ${meal.readyInMinutes || 'N/A'} minutes</small>
+              </div>
             </div>
           </div>
         `).join("");
+
     } catch (error) {
-        resultsDiv.innerHTML = `<p>Error fetching meals: ${error.message}</p>`;
+        console.error('Error searching meals:', error);
+        resultsDiv.innerHTML = `<p class="text-danger">Error searching meals. Please try again.</p>`;
     }
+}
+
+// Helper function to escape HTML
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
 }
 
 // Called when user clicks a meal option
 async function selectMeal(id, title) {
     const section = document.getElementById("serving-section");
+    const loadingMsg = document.createElement('p');
+    loadingMsg.textContent = 'Loading nutrition information...';
+    loadingMsg.className = 'text-info';
+    
+    section.innerHTML = '';
+    section.appendChild(loadingMsg);
     section.classList.remove("d-none");
-    document.getElementById("selected-meal-name").textContent = title;
-    document.getElementById("servings-input").value = 1;
-
-    // Scroll to servings input
-    document.getElementById("servings-input").scrollIntoView({ behavior: "smooth", block: "center" });
 
     try {
         const response = await fetch(`https://api.spoonacular.com/recipes/${id}/nutritionWidget.json?apiKey=${apiKey}`);
+        
+        if (!response.ok) {
+            throw new Error(`Failed to fetch nutrition data: ${response.status}`);
+        }
+
         const nutrition = await response.json();
 
         selectedMeal = {
-            id,
-            title,
+            id: id,
+            title: title,
             image: `https://spoonacular.com/recipeImages/${id}-312x231.jpg`,
-            nutrition
+            nutrition: {
+                calories: parseFloat(nutrition.calories) || 0,
+                carbs: parseFloat(nutrition.carbs?.replace('g', '')) || 0,
+                fat: parseFloat(nutrition.fat?.replace('g', '')) || 0,
+                protein: parseFloat(nutrition.protein?.replace('g', '')) || 0
+            }
         };
 
+        // Update serving section with proper form
+        section.innerHTML = `
+            <h4 class="mb-3">${escapeHtml(title)}</h4>
+            <div class="nutrition-preview mb-3 p-3 bg-light rounded">
+                <h6>Nutrition per serving:</h6>
+                <div class="row">
+                    <div class="col-3">
+                        <strong>${selectedMeal.nutrition.calories}</strong><br>
+                        <small>Calories</small>
+                    </div>
+                    <div class="col-3">
+                        <strong>${selectedMeal.nutrition.carbs}g</strong><br>
+                        <small>Carbs</small>
+                    </div>
+                    <div class="col-3">
+                        <strong>${selectedMeal.nutrition.fat}g</strong><br>
+                        <small>Fat</small>
+                    </div>
+                    <div class="col-3">
+                        <strong>${selectedMeal.nutrition.protein}g</strong><br>
+                        <small>Protein</small>
+                    </div>
+                </div>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Number of servings:</label>
+                <input type="number" class="form-control w-25" id="servings-input" min="0.1" step="0.1" value="1" />
+            </div>
+            <button class="btn btn-success btn-modal-log" onclick="confirmLogMeal()">Log My Meal</button>
+        `;
+
+        // Scroll to servings input
+        document.getElementById("servings-input").scrollIntoView({ behavior: "smooth", block: "center" });
+
     } catch (error) {
-        alert("Failed to fetch nutrition info.");
-        section.classList.add("d-none");
+        console.error('Error fetching nutrition info:', error);
+        section.innerHTML = `<p class="text-danger">Failed to load nutrition information. Please try again.</p>`;
+        selectedMeal = null;
     }
 }
 
-const btn_modal_log = document.querySelector(".btn-modal-log");
-btn_modal_log.addEventListener("click", confirmLogMeal);
+// Log meal to database
+async function confirmLogMeal() {
+    const servingsInput = document.getElementById("servings-input");
+    const servings = parseFloat(servingsInput.value);
+    const selectedDate = document.getElementById('log-date').value;
+    
+    // Debug logging
+    console.log('=== Meal Logging Debug ===');
+    console.log('Selected Meal:', selectedMeal);
+    console.log('Selected Category:', selectedCategory);
+    console.log('Servings:', servings);
+    console.log('Selected Date:', selectedDate);
+    
+    if (!selectedMeal) {
+        showNotification('Please select a meal first', 'error');
+        return;
+    }
+    
+    if (!servings || servings <= 0) {
+        showNotification('Please enter a valid number of servings', 'error');
+        servingsInput.focus();
+        return;
+    }
 
-// Log meal to the selected meal list and update summary
-function confirmLogMeal() {
-    const servings = parseFloat(document.getElementById("servings-input").value);
-    if (!selectedMeal || servings <= 0) return;
+    if (!selectedDate) {
+        showNotification('Please select a date', 'error');
+        return;
+    }
 
-    const nutrients = selectedMeal.nutrition;
-    const { calories, carbs, fat, protein } = {
-        calories: parseFloat(nutrients.calories),
-        carbs: parseFloat(nutrients.carbs),
-        fat: parseFloat(nutrients.fat),
-        protein: parseFloat(nutrients.protein),
+    if (!selectedCategory) {
+        showNotification('Please select a meal category', 'error');
+        return;
+    }
+
+    // Show loading state
+    const logButton = document.querySelector('.btn-modal-log');
+    const originalText = logButton.textContent;
+    logButton.textContent = 'Logging...';
+    logButton.disabled = true;
+
+    // Prepare the payload
+    const payload = {
+        mealId: selectedMeal.id.toString(),
+        title: selectedMeal.title,
+        image: selectedMeal.image,
+        nutrition: selectedMeal.nutrition,
+        servings: servings,
+        mealType: selectedCategory,
+        date: selectedDate
     };
 
-    // Calculate total per serving
-    const total = {
-        calories: Math.round(calories * servings),
-        carbs: Math.round(carbs * servings),
-        fat: Math.round(fat * servings),
-        protein: Math.round(protein * servings),
-    };
+    console.log('Payload being sent:', payload);
 
-    // Add to meal list
-    const mealList = document.getElementById(`${selectedCategory}-list`);
-    const mealHtml = `
-      <div class="meal-entry bg-light border p-2 rounded d-flex justify-content-between align-items-center mb-2">
-        <div class="d-flex align-items-center">
-    <img src="${selectedMeal.image}" alt="${selectedMeal.title}" class="img-thumbnail me-2" style="width: 70px; height: 70px;" />
-    <div class="content">
-      <strong>${selectedMeal.title}</strong><br/>
-      ${total.calories} kcal, ${total.carbs}g carbs, ${total.fat}g fat, ${total.protein}g protein
-    </div>
-  </div>
-  <button class="btn btn-sm btn-outline-danger btn-delete-meal me-2" title="Delete Meal">
-    <i class="fas fa-trash-alt"></i>
-  </button>
-      </div>
-    `;
-    mealList.innerHTML += mealHtml;
-
-    mealList.querySelectorAll('.btn-delete-meal').forEach(button => {
-        button.addEventListener('click', function () {
-            const entry = this.closest('.meal-entry');
-
-            // Get nutrition values from text
-            const text = entry.querySelector('div').innerText;
-            const match = text.match(/(\d+)\s*kcal,\s*(\d+)g carbs,\s*(\d+)g fat,\s*(\d+)g protein/);
-            if (match) {
-                const [, cals, carbs, fat, protein] = match.map(Number);
-                const row = document.getElementById("summary-row");
-                row.children[0].textContent = Math.max(0, parseFloat(row.children[0].textContent) - cals);
-                row.children[1].textContent = Math.max(0, parseFloat(row.children[1].textContent) - carbs);
-                row.children[2].textContent = Math.max(0, parseFloat(row.children[2].textContent) - fat);
-                row.children[3].textContent = Math.max(0, parseFloat(row.children[3].textContent) - protein);
-            }
-
-            entry.remove();
+    try {
+        const response = await fetch('/FitWell/NutritionPlanner/MealLogging/log', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(payload)
         });
-    });
 
-    // Update summary table
-    const row = document.getElementById("summary-row");
-    const current = [...row.children].map(td => parseFloat(td.textContent));
+        console.log('Response status:', response.status);
+        console.log('Response headers:', Object.fromEntries(response.headers.entries()));
 
-    row.children[0].textContent = current[0] + total.calories;
-    row.children[1].textContent = current[1] + total.carbs;
-    row.children[2].textContent = current[2] + total.fat;
-    row.children[3].textContent = current[3] + total.protein;
+        let result;
+        try {
+            result = await response.json();
+            console.log('Response data:', result);
+        } catch (jsonError) {
+            console.error('Failed to parse JSON response:', jsonError);
+            const textResponse = await response.text();
+            console.log('Raw response:', textResponse);
+            throw new Error(`Server returned invalid JSON. Status: ${response.status}`);
+        }
 
-    // Close modal and reset
-    const modal = bootstrap.Modal.getInstance(document.getElementById('mealModal'));
-    modal.hide();
+        if (response.ok && result.success) {
+            // Close modal
+            const modal = bootstrap.Modal.getInstance(document.getElementById('mealModal'));
+            modal.hide();
+            
+            // Reload meals for the selected date
+            await loadMealsForDate(selectedDate);
+            
+            // Reset form
+            resetModalForm();
+            
+            // Show success message
+            showNotification('Meal logged successfully!', 'success');
+        } else {
+            const errorMessage = result.error || `HTTP ${response.status}: ${response.statusText}`;
+            console.error('Server error:', errorMessage);
+            throw new Error(errorMessage);
+        }
+    } catch (error) {
+        console.error('Error logging meal:', error);
+        showNotification('Error logging meal: ' + error.message, 'error');
+    } finally {
+        // Reset button state
+        logButton.textContent = originalText;
+        logButton.disabled = false;
+    }
+}
+
+// Reset modal form
+function resetModalForm() {
     selectedMeal = null;
     selectedCategory = null;
     document.getElementById("search-input").value = "";
@@ -167,85 +283,223 @@ function confirmLogMeal() {
     document.getElementById("serving-section").classList.add("d-none");
 }
 
-document.addEventListener("DOMContentLoaded", function () {
-    const nav = document.querySelector(".navbar");
-    const features = document.querySelectorAll(".card");
-    const isLoggedIn = localStorage.getItem("loggedIn");
+// Load meals for a specific date from database
+async function loadMealsForDate(date) {
+    if (!date) {
+        console.error('Date is required');
+        return;
+    }
 
-    // Check if user is logged in
-    if (isLoggedIn === "true") {
-        document.body.classList.add("logged-in");
+    try {
+        const response = await fetch(`/FitWell/NutritionPlanner/MealLogging/meals?date=${encodeURIComponent(date)}`);
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
 
-        // Show the hidden nav and quicklink items
-        const showIds = [
-            "nav_tracker", "nav_nutrition", "nav_progress", "nav_reminder", "nav_profile",
-            "quicklink_tracker", "quicklink_progress", "quicklink_nutrition", "quicklink_reminder"
-        ];
-        showIds.forEach(id => {
-            const el = document.getElementById(id);
-            if (el) el.classList.remove("d-none");
-        });
-
-        // Hide login/signup/get-started buttons
-        const btn_login = document.querySelector("#btn_login");
-        const btn_signup = document.querySelector("#btn_signup");
-        const btn_get_started = document.querySelector("#btn_get_started");
-
-        if (btn_login) btn_login.classList.add("d-none");
-        if (btn_signup) btn_signup.classList.add("d-none");
-        if (btn_get_started) btn_get_started.classList.add("d-none");
-
-        // Card feature redirection
-        const buttons = document.querySelectorAll(".btn_feature");
-        buttons.forEach(button => {
-            button.addEventListener("click", function () {
-                const card = button.closest(".card");
-                const link = card.getAttribute("data-link");
-                if (link) {
-                    console.log("Redirecting to:", link);
-                    window.location.href = link;
+        if (data.success) {
+            // Clear existing meals
+            ['breakfast', 'lunch', 'dinner'].forEach(mealType => {
+                const mealList = document.getElementById(`${mealType}-list`);
+                if (mealList) {
+                    mealList.innerHTML = '';
                 }
             });
+
+            // Populate meals
+            Object.keys(data.meals).forEach(mealType => {
+                const mealList = document.getElementById(`${mealType}-list`);
+                if (mealList && data.meals[mealType]) {
+                    data.meals[mealType].forEach(meal => {
+                        addMealToDisplay(meal, mealList);
+                    });
+                }
+            });
+
+            // Update summary table
+            updateSummaryTable(data.dailyTotals || {calories: 0, carbs: 0, fat: 0, protein: 0});
+        } else {
+            console.error('Error loading meals:', data.error);
+            showNotification('Error loading meals: ' + (data.error || 'Unknown error'), 'error');
+        }
+    } catch (error) {
+        console.error('Error fetching meals:', error);
+        showNotification('Error loading meals. Please try again.', 'error');
+        
+        // Reset summary table to zeros
+        updateSummaryTable({calories: 0, carbs: 0, fat: 0, protein: 0});
+    }
+}
+
+// Add meal to display
+function addMealToDisplay(meal, mealList) {
+    const mealEntry = document.createElement('div');
+    mealEntry.className = 'meal-entry bg-light border p-3 rounded d-flex justify-content-between align-items-center mb-2';
+    mealEntry.setAttribute('data-meal-id', meal.id);
+    
+    mealEntry.innerHTML = `
+        <div class="d-flex align-items-center flex-grow-1">
+            <img src="${meal.image || 'https://via.placeholder.com/70x70?text=No+Image'}" 
+                 alt="${escapeHtml(meal.title)}" 
+                 class="img-thumbnail me-3" 
+                 style="width: 70px; height: 70px; object-fit: cover;"
+                 onerror="this.src='https://via.placeholder.com/70x70?text=No+Image'" />
+            <div class="meal-info">
+                <h6 class="mb-1">${escapeHtml(meal.title)}</h6>
+                <div class="nutrition-info">
+                    <span class="badge bg-primary me-1">${meal.totalNutrition.calories} kcal</span>
+                    <span class="badge bg-secondary me-1">${meal.totalNutrition.carbs}g carbs</span>
+                    <span class="badge bg-success me-1">${meal.totalNutrition.fat}g fat</span>
+                    <span class="badge bg-warning text-dark">${meal.totalNutrition.protein}g protein</span>
+                </div>
+                <small class="text-muted">Servings: ${meal.servings}</small>
+            </div>
+        </div>
+        <div class="meal-actions">
+            <button class="btn btn-sm btn-outline-primary me-2 btn-edit-meal" 
+                    title="Edit Servings" 
+                    data-meal-id="${meal.id}"
+                    data-current-servings="${meal.servings}">
+                <i class="fas fa-edit"></i>
+            </button>
+            <button class="btn btn-sm btn-outline-danger btn-delete-meal" 
+                    title="Delete Meal" 
+                    data-meal-id="${meal.id}">
+                <i class="fas fa-trash-alt"></i>
+            </button>
+        </div>
+    `;
+
+    mealList.appendChild(mealEntry);
+
+    // Add event listeners
+    const editBtn = mealEntry.querySelector('.btn-edit-meal');
+    const deleteBtn = mealEntry.querySelector('.btn-delete-meal');
+
+    editBtn.addEventListener('click', function() {
+        editMealServings(meal.id, meal.servings);
+    });
+
+    deleteBtn.addEventListener('click', function() {
+        deleteMeal(meal.id);
+    });
+}
+
+// Edit meal servings
+async function editMealServings(mealId, currentServings) {
+    const newServings = prompt(`Enter new number of servings:`, currentServings);
+    
+    if (newServings === null) return; // User cancelled
+    
+    const servings = parseFloat(newServings);
+    
+    if (isNaN(servings) || servings <= 0) {
+        showNotification('Please enter a valid number of servings', 'error');
+        return;
+    }
+
+    try {
+        const response = await fetch(`/FitWell/NutritionPlanner/MealLogging/meal/${mealId}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                servings: servings
+            })
+        });
+
+        const result = await response.json();
+
+        if (response.ok && result.success) {
+            // Reload meals for current date
+            const selectedDate = document.getElementById('log-date').value;
+            await loadMealsForDate(selectedDate);
+            showNotification('Meal updated successfully!', 'success');
+        } else {
+            throw new Error(result.error || 'Failed to update meal');
+        }
+    } catch (error) {
+        console.error('Error updating meal:', error);
+        showNotification('Error updating meal: ' + error.message, 'error');
+    }
+}
+
+// Delete meal from database
+async function deleteMeal(mealId) {
+    if (!confirm('Are you sure you want to delete this meal?')) {
+        return;
+    }
+
+    try {
+        const response = await fetch(`/FitWell/NutritionPlanner/MealLogging/meal/${mealId}`, {
+            method: 'DELETE'
+        });
+
+        const result = await response.json();
+
+        if (response.ok && result.success) {
+            // Reload meals for current date
+            const selectedDate = document.getElementById('log-date').value;
+            await loadMealsForDate(selectedDate);
+            showNotification('Meal deleted successfully!', 'success');
+        } else {
+            throw new Error(result.error || 'Failed to delete meal');
+        }
+    } catch (error) {
+        console.error('Error deleting meal:', error);
+        showNotification('Error deleting meal: ' + error.message, 'error');
+    }
+}
+
+// Update summary table
+function updateSummaryTable(totals) {
+    const row = document.getElementById("summary-row");
+    if (row && row.children.length >= 4) {
+        row.children[0].textContent = totals.calories || 0;
+        row.children[1].textContent = totals.carbs || 0;
+        row.children[2].textContent = totals.fat || 0;
+        row.children[3].textContent = totals.protein || 0;
+    }
+}
+
+// Show notification
+function showNotification(message, type = 'info') {
+    // Remove existing notifications
+    const existingNotifications = document.querySelectorAll('.custom-notification');
+    existingNotifications.forEach(notification => notification.remove());
+
+    // Create notification element
+    const notification = document.createElement('div');
+    notification.className = `alert alert-${type === 'success' ? 'success' : type === 'error' ? 'danger' : 'info'} alert-dismissible fade show position-fixed custom-notification`;
+    notification.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px; max-width: 400px;';
+    notification.innerHTML = `
+        ${escapeHtml(message)}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    `;
+
+    document.body.appendChild(notification);
+
+    // Auto-remove after 5 seconds
+    setTimeout(() => {
+        if (notification.parentNode) {
+            notification.remove();
+        }
+    }, 5000);
+}
+
+// Event listeners setup
+document.addEventListener("DOMContentLoaded", function () {
+    // Search input enter key
+    const searchInput = document.getElementById("search-input");
+    if (searchInput) {
+        searchInput.addEventListener("keypress", function(e) {
+            if (e.key === "Enter") {
+                e.preventDefault();
+                searchMeal();
+            }
         });
     }
-
-    // Automatically highlight the correct nav link based on current page
-    const currentPage = window.location.pathname.split("/").pop();
-    const navLinks = document.querySelectorAll(".nav-link");
-
-    navLinks.forEach(link => {
-        const href = link.getAttribute("href");
-        // Check if the href contains the current page name or ends with it
-        if (href && (href.includes(currentPage) || href.endsWith(currentPage) ||
-            (currentPage === "NutritionPlanner.html" && href.includes("NutritionPlanner.html")))) {
-            link.classList.add("active");
-
-            // Add green highlight
-            if (currentPage === "NutritionPlanner.html") {
-                link.classList.add("active-green");
-            }
-        }
-    });
 });
-
-// Log out
-const btn_logout = document.querySelector("#btn_logout");
-btn_logout.addEventListener("click", logout);
-
-function logout() {
-    // Retain the 'mealFavorites' in localStorage, clear other data
-    const favorites = localStorage.getItem('mealFavorites');
-
-    // Clear all other data in localStorage
-    localStorage.clear();
-
-    // Restore the 'mealFavorites' back to localStorage
-    if (favorites) {
-        localStorage.setItem('mealFavourites', favorites);
-    }
-
-    // Redirect after a slight delay
-    setTimeout(function () {
-        window.location.href = "Login.html";
-    }, 500);
-}

@@ -1,5 +1,32 @@
 document.addEventListener("DOMContentLoaded", function () {
-    // Function to clean up modal styles
+
+    document.querySelectorAll(".notification-toggle").forEach(toggle => {
+    toggle.addEventListener("change", async function () {
+        const category = this.dataset.category;
+        const isEnabled = this.checked;
+
+        try {
+            const response = await fetch("/FitWell/toggleNotification", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    category,
+                    isNotificationEnabled: isEnabled
+                })
+            });
+
+            const result = await response.json();
+            if (!response.ok) throw new Error(result.message || "Update failed");
+            console.log("Notification setting updated:", result);
+        } catch (error) {
+            console.error("Error updating notification setting:", error);
+            alert("Failed to update notification setting.");
+        }
+    });
+});
+
     function cleanModalBackdrop() {
         const backdrop = document.querySelector('.modal-backdrop');
         if (backdrop) backdrop.remove();
@@ -8,7 +35,6 @@ document.addEventListener("DOMContentLoaded", function () {
         document.body.style.removeProperty('overflow');
     }
 
-    // Listen for modal close events and clean up backdrop
     const modals = ['updateProfileModal', 'changePasswordModal'];
     modals.forEach(modalId => {
         const modal = document.getElementById(modalId);
@@ -16,219 +42,174 @@ document.addEventListener("DOMContentLoaded", function () {
             modal.addEventListener('hidden.bs.modal', cleanModalBackdrop);
         }
     });
+    
+        const modal = new bootstrap.Modal(document.getElementById("updateProfileModal"));
+        const openBtn = document.querySelector("#updateProfile");
+        const fileInput = document.getElementById("modalProfilePic");
+        const previewImg = document.getElementById("modalProfilePicPreview");
 
-    // Check if the user is logged in
-    const isLoggedIn = localStorage.getItem("loggedIn");
-    if (isLoggedIn === "true") {
-        document.body.classList.add("logged-in");
+        if (openBtn) {
+            openBtn.addEventListener("click", () => {
+            modal.show();
+            });
+        }
 
-        const showIds = [
-            "nav_tracker", "nav_nutrition", "nav_progress", "nav_reminder", "nav_profile",
-            "quicklink_tracker", "quicklink_progress", "quicklink_nutrition", "quicklink_reminder"
-        ];
-        showIds.forEach(id => {
-            const el = document.getElementById(id);
-            if (el) el.classList.remove("d-none");
-        });
-
-        const btn_login = document.querySelector("#btn_login");
-        const btn_signup = document.querySelector("#btn_signup");
-        const btn_get_started = document.querySelector("#btn_get_started");
-
-        if (btn_login) btn_login.classList.add("d-none");
-        if (btn_signup) btn_signup.classList.add("d-none");
-        if (btn_get_started) btn_get_started.classList.add("d-none");
-    }
-
-    // Retrieve profile info from localStorage
-    const username = localStorage.getItem("userUsername") || "User";
-    const email = localStorage.getItem("userEmail") || "user@gmail.com";
-    const age = localStorage.getItem("userAge") || "20";
-    const gender = localStorage.getItem("userGender") || "Male";
-    const height = localStorage.getItem("userHeight") || "168"; // Numeric value only, no "m"
-    const weight = localStorage.getItem("userWeight") || "55"; // Numeric value only, no "kg"
-    const targetWeight = localStorage.getItem("userTargetWeight") || "50"; // Numeric value only, no "kg"
-
-    // Populate profile info on page
-    const usernameHeading = document.querySelector(".profile h2");
-    const profileFields = document.querySelectorAll(".profile .info-row span:last-child");
-    if (usernameHeading) {
-        usernameHeading.textContent = username; // Set username in <h2>
-    }
-    if (profileFields.length >= 6) {
-        profileFields[0].textContent = email;
-        profileFields[1].textContent = age;
-        profileFields[2].textContent = gender;
-        profileFields[3].textContent = `${height} m`;
-        profileFields[4].textContent = `${weight} kg`;
-        profileFields[5].textContent = `${targetWeight} kg`;
-    }
-
-    // Load profile picture
-    const profilePic = document.getElementById("profilePic");
-    const savedProfilePic = localStorage.getItem("userProfilePic");
-    if (profilePic) {
-        profilePic.src = savedProfilePic || "/images/signup&login.jpg";
-    }
-
-    // Show the update profile modal and populate with existing profile data
-    const updateProfileButton = document.querySelector("#updateProfile");
-    if (updateProfileButton) {
-        updateProfileButton.addEventListener("click", () => {
-            const modal = new bootstrap.Modal(document.getElementById("updateProfileModal"));
-            document.getElementById("modalUsername").value = username;
-            document.getElementById("modalEmail").value = email;
-            document.getElementById("modalAge").value = age;
-            document.getElementById("modalGender").value = gender;
-            document.getElementById("modalHeight").value = height; // Numeric value
-            document.getElementById("modalWeight").value = weight; // Numeric value
-            document.getElementById("modalTargetWeight").value = targetWeight; // Numeric value
-            
-            const modalProfilePicInput = document.getElementById("modalProfilePic");
-            const modalProfilePicPreview = document.getElementById("modalProfilePicPreview");
-
-            if (modalProfilePicInput && modalProfilePicPreview) {
-                // Show existing profile picture
-                modalProfilePicPreview.src = savedProfilePic || "/images/signup&login.jpg";
-
-                // Update preview when a new image is selected
-                modalProfilePicInput.addEventListener("change", function () {
-                    const file = this.files[0];
-                    if (file) {
-                        const reader = new FileReader();
-                        reader.onload = function (e) {
-                            modalProfilePicPreview.src = e.target.result;
-                        };
-                        reader.readAsDataURL(file);
-                    }
-                });
+        if (fileInput && previewImg) {
+            fileInput.addEventListener("change", function () {
+            const file = this.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                previewImg.src = e.target.result; // ⚡ Live preview!
+                };
+                reader.readAsDataURL(file);
             }
+            });
+        }
 
+    const originalProfileData = {
+        username: document.getElementById("modalUsername").value,
+        age: document.getElementById("modalAge").value,
+        gender: document.getElementById("modalGender").value,
+        height: document.getElementById("modalHeight").value,
+        weight: document.getElementById("modalWeight").value,
+        targetWeight: document.getElementById("modalTargetWeight").value,
+        profilePicSrc: document.getElementById("modalProfilePicPreview").src
+    };
+
+    document.getElementById("updateProfileModal").addEventListener("hidden.bs.modal", function () {
+    document.getElementById("modalUsername").value = originalProfileData.username;
+    document.getElementById("modalAge").value = originalProfileData.age;
+    document.getElementById("modalGender").value = originalProfileData.gender;
+    document.getElementById("modalHeight").value = originalProfileData.height;
+    document.getElementById("modalWeight").value = originalProfileData.weight;
+    document.getElementById("modalTargetWeight").value = originalProfileData.targetWeight;
+    document.getElementById("modalProfilePicPreview").src = originalProfileData.profilePicSrc;
+
+    // Clear file input
+    document.getElementById("modalProfilePic").value = "";
+    });
+
+
+    const changePasswordButton = document.getElementById("changePassword");
+    if (changePasswordButton) {
+        changePasswordButton.addEventListener("click", () => {
+            const modal = new bootstrap.Modal(document.getElementById("changePasswordModal"));
             modal.show();
         });
     }
 
-    // Save the profile changes after the modal is closed
-    const saveProfileChangesButton = document.getElementById("saveProfileChanges");
-    if (saveProfileChangesButton) {
-        saveProfileChangesButton.addEventListener("click", () => {
-            const newUsername = document.getElementById("modalUsername").value;
-            const newAge = document.getElementById("modalAge").value;
-            const newGender = document.getElementById("modalGender").value;
-            const newHeight = parseFloat(document.getElementById("modalHeight").value);
-            const newWeight = parseFloat(document.getElementById("modalWeight").value);
-            const newTargetWeight = parseFloat(document.getElementById("modalTargetWeight").value);
-            const file = document.getElementById("modalProfilePic").files[0];
-
-            // Save the updated values to localStorage
-            localStorage.setItem("userUsername", newUsername);
-            localStorage.setItem("userAge", newAge);
-            localStorage.setItem("userGender", newGender);
-            localStorage.setItem("userHeight", newHeight);
-            localStorage.setItem("userWeight", newWeight);
-            localStorage.setItem("userTargetWeight", newTargetWeight);
-
-            // Save profile picture if selected
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function (e) {
-                    localStorage.setItem("userProfilePic", e.target.result);
-                    location.reload(); // Reload after setting the image
-                };
-                reader.readAsDataURL(file);
-            } else {
-                location.reload();
-            }
-
-            // Close the modal and clean up the backdrop
-            const modal = bootstrap.Modal.getInstance(document.getElementById("updateProfileModal"));
-            modal.hide();
-
-            // Reload to reflect the changes
-            location.reload();
-        });
-    }
-
-    // Change password functionality
-    const changePasswordButton = document.getElementById("changePassword");
-    if (changePasswordButton) {
-        changePasswordButton.addEventListener("click", () => {
-            const changePasswordModal = new bootstrap.Modal(document.getElementById("changePasswordModal"));
-            changePasswordModal.show();
-        });
-    }
-
-    // Validate the password change form
+    const currentPasswordInput = document.getElementById("currentPassword");
     const newPasswordInput = document.getElementById("newPassword");
     const confirmNewPasswordInput = document.getElementById("confirmPassword");
+
     const newPasswordError = document.getElementById("newPasswordError");
     const confirmNewPasswordError = document.getElementById("confirmNewPasswordError");
-
-    function validatePassword() {
-        const password = newPasswordInput.value;
-        const passwordPattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[A-Za-z\d]{8,}$/;
-        if (!passwordPattern.test(password)) {
-            newPasswordError.classList.remove("d-none");
-        } else {
-            newPasswordError.classList.add("d-none");
-        }
-    }
-
-    function validateConfirmPassword() {
-        const password = newPasswordInput.value;
-        const confirmPassword = confirmNewPasswordInput.value;
-        if (password !== confirmPassword) {
-            confirmNewPasswordError.classList.remove("d-none");
-        } else {
-            confirmNewPasswordError.classList.add("d-none");
-        }
-    }
-
-    newPasswordInput.addEventListener("input", validatePassword);
-    confirmNewPasswordInput.addEventListener("input", validateConfirmPassword);
-
-    // Save new password
     const saveNewPasswordButton = document.getElementById("saveNewPassword");
-    if (saveNewPasswordButton) {
-        saveNewPasswordButton.addEventListener("click", () => {
-            validatePassword();
-            validateConfirmPassword();
 
-            // If no errors, save the new password
-            if (newPasswordError.classList.contains("d-none") && confirmNewPasswordError.classList.contains("d-none")) {
-                const newPassword = newPasswordInput.value;
-                localStorage.setItem("userPassword", newPassword);
+    function validatePasswordStrength(password) {
+        return /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[A-Za-z\d]{8,}$/.test(password);
+    }
 
-                // Close the modal and clean up the backdrop
-                const changePasswordModal = bootstrap.Modal.getInstance(document.getElementById("changePasswordModal"));
-                changePasswordModal.hide();
+    function validateForm() {
+        const current = currentPasswordInput.value.trim();
+        const newPass = newPasswordInput.value.trim();
+        const confirm = confirmNewPasswordInput.value.trim();
 
-                // Optionally reload to reflect the changes
-                location.reload();
+        const isNewPassValid = validatePasswordStrength(newPass);
+        const isMatch = newPass === confirm;
+        const isCurrentValid = current.length > 0;
+
+        newPasswordError.classList.toggle("d-none", isNewPassValid || newPass === "");
+        confirmNewPasswordError.classList.toggle("d-none", isMatch || confirm === "");
+
+        saveNewPasswordButton.disabled = false;
+    }
+
+    currentPasswordInput.addEventListener("input", validateForm);
+    newPasswordInput.addEventListener("input", validateForm);
+    confirmNewPasswordInput.addEventListener("input", validateForm);
+
+    const changePasswordForm = document.getElementById("changePasswordForm");
+    if (changePasswordForm) {
+        changePasswordForm.addEventListener("submit", function (e) {
+            // Perform custom validation (password strength and matching)
+            const newPass = newPasswordInput.value.trim();
+            const confirm = confirmNewPasswordInput.value.trim();
+            const isNewPassValid = validatePasswordStrength(newPass);
+            const isMatch = newPass === confirm;
+
+            if (!isNewPassValid || !isMatch) {
+                e.preventDefault(); // prevent submission if invalid
+                // Show error
+                newPasswordError.classList.toggle("d-none", isNewPassValid);
+                confirmNewPasswordError.classList.toggle("d-none", isMatch);
+            } else {
+                // If everything is valid, allow browser validation to do its thing
+                newPasswordError.classList.add("d-none");
+                confirmNewPasswordError.classList.add("d-none");
             }
         });
+
+    }
+
+        // Show modal if server sent password error
+        const showModalTrigger = document.getElementById("showChangePasswordModal");
+        if (showModalTrigger && showModalTrigger.value === "true") {
+            const modal = new bootstrap.Modal(document.getElementById("changePasswordModal"));
+            modal.show();
+        }
+
+        // Hide current password error on input
+        const currentPasswordError = document.getElementById("currentPasswordError");
+        if (currentPasswordInput && currentPasswordError) {
+            currentPasswordInput.addEventListener("input", () => {
+                currentPasswordError.classList.add("d-none");
+            });
+        }
+
+        const flagElement = document.getElementById("profile-flags");
+        const passwordError = flagElement?.dataset.passwordError === "true";
+        const passwordChangedSuccess = flagElement?.dataset.passwordSuccess === "true";
+
+        if (passwordError) {
+            const modal = new bootstrap.Modal(document.getElementById("changePasswordModal"));
+            modal.show();
+        }
+
+        
+        if (passwordChangedSuccess) {
+            alert("Password successfully updated!");
+        }
+
+
+    const resetChangePasswordModal = () => {
+    currentPasswordInput.value = '';
+    newPasswordInput.value = '';
+    confirmNewPasswordInput.value = '';
+    newPasswordError.classList.add("d-none");
+    confirmNewPasswordError.classList.add("d-none");
+    saveNewPasswordButton.disabled = true;
+    };
+
+    const passwordModal = document.getElementById("changePasswordModal");
+    if (passwordModal) {
+        passwordModal.addEventListener("hidden.bs.modal", resetChangePasswordModal);
+    }
+
+    const btn_logout = document.querySelector("#btn_logout");
+    if (btn_logout) {
+        btn_logout.addEventListener("click", () => {
+            window.location.href = "/FitWell/Logout";
+        });
+    }
+
+    const deleteAccountBtn = document.getElementById("deleteAccount");
+    if (deleteAccountBtn) {
+    deleteAccountBtn.addEventListener("click", () => {
+        const modal = new bootstrap.Modal(document.getElementById("deleteAccountModal"));
+        modal.show();
+    });
     }
 
 });
-
-// Log out
-const btn_logout = document.querySelector("#btn_logout");
-btn_logout.addEventListener("click", logout);
-
-function logout() {
-  // Retain the 'mealFavorites' in localStorage, clear other data
-  const favorites = localStorage.getItem('mealFavourites');
-
-  // Clear all other data in localStorage
-  localStorage.clear();
-
-  // Restore the 'mealFavorites' back to localStorage
-  if (favorites) {
-    localStorage.setItem('mealFavourites', favorites);
-  }
-
-  // Redirect after a slight delay
-  setTimeout(function () {
-    window.location.href = "Login.html";
-  }, 500);
-}
