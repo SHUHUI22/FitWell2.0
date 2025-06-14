@@ -20,7 +20,6 @@ if (btn_get_started) {
     });
 }
 
-// *Need modify
 const buttons = document.querySelectorAll(".btn_feature");
 buttons.forEach(button => {
     button.addEventListener("click", function () {
