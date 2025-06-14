@@ -88,7 +88,7 @@ app.use('/api/user', userRoute);
 app.use('/FitWell', requireLogin, ProfileRoute);
 app.use('/FitWell', requireLogin, FitnessRoute);
 app.use('/FitWell', requireLogin, HistoryRoute);
-app.use('/FitWell', ProgressChartRoute);
+app.use('/FitWell', requireLogin, ProgressChartRoute);
 app.use('/FitWell', requireLogin, NutritionPlannerRoute);
 app.use('/FitWell', requireLogin, MealSuggestionRoute);
 app.use('/FitWell', requireLogin, MealLoggingRoute);
