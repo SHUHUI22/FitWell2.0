@@ -4,7 +4,14 @@ dotenv.config();
 const nodemailer = require('nodemailer');
 const Reminder = require('../models/Reminder');
 const Users = require('../models/Users');
-const getCurrentUserEmail = (req) => req.session.email || "yanjie0910@gmail.com";
+
+// Helper: Get user email by session ID
+const getCurrentUserEmail = async (req) => {
+  if (!req.session.userId) throw new Error('User not logged in');
+  const user = await Users.findById(req.session.userId);
+  if (!user) throw new Error('User not found');
+  return user.email;
+};
 
 const transporter = nodemailer.createTransport({
   service: 'gmail',
@@ -14,45 +21,49 @@ const transporter = nodemailer.createTransport({
   }
 });
 
-// Render Create Reminder page, with currentTab for UI tab highlight
 exports.showCreateForm = (req, res) => {
+  if (!req.session.userId) return res.redirect('/FitWell/Login');
   res.render('CreateReminder', { currentTab: 'create' });
 };
 
 exports.showListPage = async (req, res) => {
   try {
-    const userEmail = getCurrentUserEmail(req);
-    const reminders = await Reminder.find({ userEmail });
+    if (!req.session.userId) return res.redirect('/FitWell/Login');
+    const reminders = await Reminder.find({ userId: req.session.userId });
 
     res.render('MyReminder', {
       reminders,
-      currentTab: 'my‑reminders',
+      currentTab: 'my-reminders',
       successMessage: req.session.successMessage || null,
     });
-    // Clear the flash message after rendering once
+
     req.session.successMessage = null;
   } catch (error) {
+    console.error('Error fetching reminders:', error);
     res.render('MyReminder', {
       reminders: [],
-      currentTab: 'my‑reminders',
+      currentTab: 'my-reminders',
       successMessage: null,
       errorMessage: error.message,
     });
   }
 };
 
-  exports.createReminder = async (req, res) => {
+exports.createReminder = async (req, res) => {
   try {
-    const userEmail = req.session.email;
+    if (!req.session.userId) return res.redirect('/FitWell/Login');
 
-    // Persist reminder
-    const reminder = new Reminder({ ...req.body, userEmail });
+    const userEmail = await getCurrentUserEmail(req);
+
+    const reminder = new Reminder({
+      ...req.body,
+      userId: req.session.userId
+    });
     await reminder.save();
 
-    // Fetch notification settings
-    const user = await Users.findOne({ email: userEmail });
-    const category = reminder.category;
-    const isNotificationEnabled = user?.notification?.[category];
+    // Send email if user has notifications enabled
+    const user = await Users.findById(req.session.userId);
+    const isNotificationEnabled = user?.notification?.[reminder.category];
 
     if (isNotificationEnabled) {
       const mailOptions = {
@@ -61,17 +72,15 @@ exports.showListPage = async (req, res) => {
         subject: 'Ding ding! Time for your FitWell Mission',
         text: `You created a new reminder:\n\nTitle: ${reminder.title}\nCategory: ${reminder.category}\nDate: ${reminder.date}\nTime: ${reminder.time}\nRepeat: ${reminder.repeat}`,
       };
-    try {
-      await transporter.sendMail(mailOptions);
-      console.log('Email sent successfully');
-    } catch (emailErr) {
-      console.error('Email sending failed:', emailErr);
-   }
-    } else {
-      console.log(`Notification for ${category} is disabled; no email sent.`);
+
+      try {
+        await transporter.sendMail(mailOptions);
+        console.log('Email sent successfully');
+      } catch (emailErr) {
+        console.error('Email sending failed:', emailErr);
+      }
     }
 
-    // Flash success message & redirect
     req.session.successMessage = 'Reminder created successfully!';
     res.redirect('/FitWell/reminders/my-reminders');
   } catch (error) {
@@ -83,40 +92,39 @@ exports.showListPage = async (req, res) => {
     });
   }
 };
-// Update reminder without login session
+
 exports.updateReminder = async (req, res) => {
   try {
-    const userEmail = req.session.email;
+    if (!req.session.userId) return res.status(401).json({ message: 'User not logged in' });
     const { id } = req.params;
 
     const reminder = await Reminder.findOneAndUpdate(
-      { _id: id, userEmail },
+      { _id: id, userId: req.session.userId },
       req.body,
-      { new: true },
+      { new: true }
     );
 
-    if (!reminder) {
-      return res.status(404).json({ message: 'Reminder not found' });
-    }
+    if (!reminder) return res.status(404).json({ message: 'Reminder not found' });
 
     res.json({ message: 'Reminder updated successfully', reminder });
   } catch (error) {
+    console.error('Update reminder error:', error);
     res.status(500).json({ message: error.message });
   }
 };
+
 exports.deleteReminder = async (req, res) => {
   try {
-    const userEmail = req.session.email;
+    if (!req.session.userId) return res.status(401).json({ message: 'User not logged in' });
     const { id } = req.params;
 
-    const result = await Reminder.findOneAndDelete({ _id: id, userEmail });
+    const result = await Reminder.findOneAndDelete({ _id: id, userId: req.session.userId });
 
-    if (!result) {
-      return res.status(404).json({ message: 'Reminder not found' });
-    }
+    if (!result) return res.status(404).json({ message: 'Reminder not found' });
 
     res.json({ message: 'Reminder deleted successfully' });
   } catch (error) {
+    console.error('Delete reminder error:', error);
     res.status(500).json({ message: error.message });
   }
 };

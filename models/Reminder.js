@@ -23,12 +23,13 @@ const reminderSchema = new mongoose.Schema({
     enum: ['none', 'daily', 'weekly', 'monthly'],
     default: 'none'
   },
-  userEmail: {
-    type: String,
+   userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'users',
     required: true
   }
-},{
- timestamps: true
+}, {
+  timestamps: true
 });
 
-module.exports = mongoose.model('reminders', reminderSchema);
+module.exports = mongoose.model('Reminder', reminderSchema);
