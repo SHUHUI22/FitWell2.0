@@ -68,8 +68,6 @@ const requireLogin = (req, res, next) => {
 // Import routes
 const LandingPageRoute = require("./routes/LandingPageRoute");
 const authRoute = require("./routes/authRoute");
-
-
 const ProfileRoute = require("./routes/ProfileRoute");
 const FitnessRoute = require("./routes/FitnessRoute");
 const HistoryRoute = require("./routes/HistoryRoute");
@@ -85,8 +83,8 @@ const AuthStatusRoute = require("./routes/AuthStatusRoute");
 app.use('/FitWell', LandingPageRoute);
 app.use('/FitWell', authRoute);
 app.use('/FitWell', requireLogin, ProfileRoute);
-app.use('/FitWell', FitnessRoute);
-app.use('/FitWell', HistoryRoute);
+app.use('/FitWell', requireLogin, FitnessRoute);
+app.use('/FitWell', requireLogin, HistoryRoute);
 app.use('/FitWell', requireLogin, NutritionPlannerRoute);
 app.use('/FitWell', requireLogin, MealSuggestionRoute);
 app.use('/FitWell', requireLogin, MealLoggingRoute);

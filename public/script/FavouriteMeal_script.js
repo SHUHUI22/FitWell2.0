@@ -2,56 +2,6 @@ document.addEventListener("DOMContentLoaded", function () {
     loadFavourites();
 });
 
-// Check authentication status from server
-async function checkAuthStatus() {
-    try {
-        const response = await fetch('/FitWell/api/auth/status');
-        const data = await response.json();
-        
-        if (data.isLoggedIn) {
-            document.body.classList.add("logged-in");
-
-            // Show the hidden nav and quicklink items
-            const showIds = [
-                "nav_tracker", "nav_nutrition", "nav_progress", "nav_reminder", "nav_profile",
-                "quicklink_tracker", "quicklink_progress", "quicklink_nutrition", "quicklink_reminder"
-            ];
-            showIds.forEach(id => {
-                const el = document.getElementById(id);
-                if (el) el.classList.remove("d-none");
-            });
-
-            // Hide login/signup/get-started buttons
-            const btn_login = document.querySelector("#btn_login");
-            const btn_signup = document.querySelector("#btn_signup");
-            const btn_get_started = document.querySelector("#btn_get_started");
-
-            if (btn_login) btn_login.classList.add("d-none");
-            if (btn_signup) btn_signup.classList.add("d-none");
-            if (btn_get_started) btn_get_started.classList.add("d-none");
-
-            // Card feature redirection
-            const buttons = document.querySelectorAll(".btn_feature");
-            buttons.forEach(button => {
-                button.addEventListener("click", function () {
-                    const card = button.closest(".card");
-                    const link = card.getAttribute("data-link");
-                    if (link) {
-                        console.log("Redirecting to:", link);
-                        window.location.href = link;
-                    }
-                });
-            });
-        } else {
-            // Redirect to login if not authenticated
-            window.location.href = "/FitWell/Login";
-        }
-    } catch (error) {
-        console.error('Error checking auth status:', error);
-        window.location.href = "/FitWell/Login";
-    }
-}
-
 // Load favourites from MongoDB and display full information
 async function loadFavourites() {
     try {

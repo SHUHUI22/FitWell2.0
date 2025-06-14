@@ -12,10 +12,8 @@ async function showFitnessPage(req, res) {
     const weight = user?.weight;
 
     try {
-        // const userId = new mongoose.Types.ObjectId(req.session.userId);
         console.log("User ID at showFitnessPage:", userId);
 
-        // const today = new Date().toISOString().split('T')[0];
         // Define full date range for today
         const start = new Date();
         start.setHours(0, 0, 0, 0);
