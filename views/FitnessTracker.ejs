@@ -6,9 +6,9 @@
 
     <!-- Contains the web page document’s main content  -->
     <main id="FitnessTracker">
-        <div class="container py-2"> 
+        <div class="container py-1"> 
             <div class="row">
-                <div class="col-md-5 mb-4">
+                <div class="col-md-5 my-auto">
                 <!-- Log Workout -->
                     <section id="logWork" class="container">
                     <h2 class="fw-bold mb-4">Log Workout</h2>
@@ -17,11 +17,11 @@
                     <div class="input-log ">
                          <label for="workoutType" >Workout Type</label><br>
                          <select id="workoutType" name="workoutType" required>
-                             <option selected ="cycling" value="cycling">Cycling</option>
-                             <option value="running">Running</option>
-                             <option value="aerobic">Aerobic</option>
-                             <option value="yoga">Yoga</option>
-                             <option value="zumba">Zumba</option>
+                             <option selected value="Cycling">Cycling</option>
+                             <option value="Running">Running</option>
+                             <option value="Aerobic">Aerobic</option>
+                             <option value="Yoga">Yoga</option>
+                             <option value="Zumba">Zumba</option>
                          </select>
                     </div>
                     <div class="input-log">
@@ -51,7 +51,7 @@
                     <div class="row px-4">
                          <div class="col-md-12">
                              <!-- Today's Summary -->
-                             <section id="todaySummary" class="container my-4">
+                             <section id="todaySummary" class="container my-3">
                              <h2 class="fw-bold mb-4">Today's Summary</h2>
                              <div class="summary_content">
                                  
@@ -68,42 +68,44 @@
 
                                 <!-- Center content -->
                                 <div class="streak-content position-absolute top-50 start-50 translate-middle text-center">
-                                    <p id="stepCount" class="current-step fw-bold mt-2 mb-1"><%= steps || 0 %></p>
+                                    <p id="stepCount" class="current-step fw-bold mt-2 mb-1" data-value="<%= steps || 0 %>"><%= steps%></p>
                                     <large class="large text-muted mt-1">steps</large>
-                                    <div class="step-goal text-muted mb-2" id="goalValue">Goal : <%= stepGoal || 10000 %></div>
+                                    <div class="step-goal text-muted mb-2" id="goalValue" data-value="<%= stepGoal || 10000 %>">Goal : <%= stepGoal%></div>
                                 </div>
                             </div>    
                                   
-                            <div class="d-flex flex-column mt-2 pe-5 me-4">                      
+                            <div class="d-flex flex-column mt-2 pe-5 ms-3 align-items-start">                      
                                 <div class="row-md-4">
                                     <div class="summary-icon mb-3">
-                                        <i class="fas fa-location-dot me-2"></i> <span><%= distance || '0.0 km' %></span>
+                                        <i class="fas fa-location-dot me-2"></i> <span><%= distance %> km</span>
                                     </div>
                                 </div>
                                 <div class="row-md-4">
                                     <div class="summary-icon mb-3">
-                                        <i class="fas fa-fire me-1"></i> <span><%= caloriesBurned || '0 kcal' %></span>
+                                        <i class="fas fa-fire me-2"></i> <span><%= caloriesBurned%> kcal</span>
                                     </div>
                                 </div>
                                 <div class="row-md-4">
                                     <div class="summary-icon">
-                                        <i class="fas fa-stopwatch me-2"></i> <span><%= duration || '0 min' %></span>
+                                        <i class="fas fa-stopwatch me-2"></i> <span><%= duration%> min</span>
                                     </div>
                                 </div>                             
                             </div> 
                             <div class="mt-4">
-                                <label for="stepGoal" class="form-label fw-semibold">Daily Step Goal</label>
-                                <input id="stepGoal" type="number" class="form-control" placeholder="Enter your step goal (e.g., 10000)" min="1000"/>
-                                <button id="btn-set-goal" class="btn btn-lg px-5 mx-auto d-block border border-2 rounded-pill">Set Goal</button>
+                                <form action="/FitWell/Fitness/updateStepGoal" method="POST">
+                                    <label for="stepGoal" class="form-label fw-semibold">Daily Step Goal</label>
+                                    <input id="stepGoal" name="stepGoal" type="number" class="form-control" placeholder="(e.g., 10000)" min="1000"/>
+                                    <button id="btn-set-goal" type="submit" class="btn btn-lg px-5 mx-auto d-block border border-2 rounded-pill">Set Goal</button>
+                                </form>
                             </div>                        
                             </div>
                             </section>
 
-                            <div class="col-md-12 mt-4">
+                            <div class="col-md-12 mt-3">
                              <!-- Activity History -->
                             <section id="activityHistory" class="container my-3">
                             <h2 class="fw-bold mb-4">Activity History 
-                                <a id="btn-view-more" href="/FitWell/activities" class=" btn-sm text-decoration-none">
+                                <a id="btn-view-more" href="/FitWell/Activities" class=" btn-sm text-decoration-none">
                                     <i class="fas fa-chevron-right fs-5"></i>
                                 </a>
                             </h2>
@@ -120,7 +122,13 @@
                                         </div>
 
                                         <div class="fs-5 fw-semibold">
-                                            <%= workout.detail %>
+                                            <% if (workout.workoutType == "Cycling") { %>
+                                                <%= workout.detail %> km
+                                            <% } else if(workout.workoutType == "Running") { %>
+                                                <%= workout.detail %> steps
+                                            <% } else { %>
+                                                <%= workout.detail %>
+                                            <% } %>
                                         </div>
                                         <div class="text-end">
                                             <div>
@@ -146,6 +154,9 @@
             </div>
         </div>
     </main>
+
+    <!-- Hidden input example -->
+    <input type="hidden" id="userWeight" value="<%= weight %>">
 
     <!-- Footer -->
     <%- include("partials/footer", {scriptFile:"FitnessTracker_script.js"}) %>

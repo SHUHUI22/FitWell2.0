@@ -7,20 +7,66 @@
     <!-- Contains the web page document’s main content  -->
     <main class="px-4">
         <div id="history">
-            <section id="activityHistory" class="container">
+            <section id="activityHistory" class="container px-4">
                 <h2 class="fw-bold mb-4">Activity History</h2>
 
                 <% if (activities.length === 0) { %>
                     <p class ="text-muted"> No activity history found.</p>        
                 <% } else { %>
-                    <% activities.forEach(activity => { %>
-                        <div ><strong><%= new Date(activity.date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' }) %></strong></div>
-                        <div class="mb-3 p-3 border rounded d-flex align-items-center justify-content-between" >
+                    <%
+                        let lastDatePrinted = null;
+                        activities.forEach(activity => {
+                            const currentDate = new Date(activity.date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' });
+                            const isNewDate = currentDate !== lastDatePrinted;
+                            if (isNewDate) {
+                    %>
+                        <div><strong><%= currentDate %></strong></div>
+                    <%
+                            lastDatePrinted = currentDate;
+                        }
+                    %>
+                        <div class="container mb-3 p-3 border rounded d-flex align-items-center justify-content-between flex-wrap" >
+                            
+                            <% 
+                                let detailIcon, detailLabel;
+                                switch (activity.workoutType) {
+                                case "Cycling":
+                                    detailIcon = "fa-route";
+                                    detailLabel = "Distance (in km)";
+                                    break;
+                                case "Running":
+                                    detailIcon = "fa-shoe-prints";
+                                    detailLabel = "Steps (e.g. 1000)";
+                                    break;
+                                case "Aerobic":
+                                    detailIcon = "fa-circle-info";
+                                    detailLabel = "Type (e.g. Jumping Jacks)";
+                                    break;
+                                case "Yoga":
+                                    detailIcon = "fa-circle-info";
+                                    detailLabel = "Type (e.g. Vinyasa)";
+                                    break;
+                                case "Zumba":
+                                    detailIcon = "fa-circle-info";
+                                    detailLabel = "Intensity (e.g. Basic, Strong)";
+                                    break;
+                                default:
+                                    detailIcon = "fa-circle-question";
+                                    detailLabel = "Detail";
+                                }
+                            %>
 
-                            <div class="d-flex align-items-center gap-4 flex-wrap">                    
+                            <div class="d-flex align-items-center gap-3">                    
                                 <i class="fas <%= activity.icon %> me-3 fs-4 "></i>
                                 <div><%= activity.workoutType %></div>                      
-                                <i class="fas fa-location-dot "></i> <%= activity.detail %>  
+                                <i class="fas <%= detailIcon %> "></i> 
+                                <% if (activity.workoutType == "Cycling") { %>
+                                                <%= activity.detail %> km
+                                            <% } else if(activity.workoutType == "Running") { %>
+                                                <%= activity.detail %> steps
+                                            <% } else { %>
+                                                <%= activity.detail %>
+                                            <% } %>
                                 <i class="fas fa-stopwatch"></i> <%= activity.duration %> min 
                                 <i class="fas fa-fire"></i> <%= activity.caloriesBurned %> kcal                       
                             </div>
@@ -112,7 +158,9 @@
             </div>
     </main>
 
-    
+    <!-- Hidden input example -->
+    <input type="hidden" id="userWeight" value="<%= weight %>">
+
     <!-- Footer -->
     <%- include("partials/footer", {scriptFile:"History_script.js"}) %>
     <script>

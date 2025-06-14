@@ -23,6 +23,9 @@ const workoutSchema = new mongoose.Schema({
     caloriesBurned:{
         type: Number,
         required: true
+    },
+    icon:{
+        type: String
     }
 });
 
@@ -53,6 +56,9 @@ const summaryScheme = new mongoose.Schema({
     duration: { 
         type: Number, 
         required: true 
+    },
+    icon: {
+        type: String
     } 
 });
 
