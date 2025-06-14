@@ -48,6 +48,9 @@ async function signUpUser(req, res) {
             weight,
             targetWeight,
             gender,
+            weightHistory: 
+            [{
+                weight: weight,
             weightHistory: [{
                 weight,
                 date: new Date()

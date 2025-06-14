@@ -1,0 +1,217 @@
+<!-- Head -->
+<%- include("partials/head",{title: "Progress Chart" , cssFile: "ProgressChart_style.css" }) %>
+
+  <!-- Navigation bar -->
+  <%- include("partials/nav") %>
+
+    <!-- Contains the web page document’s main content  -->
+    <main class="container-fluid py-4" style="background-color: #e4efe7">
+      <h1 class="welcomeUser mt-5 mb-4">Hi, <%= username %>!</h1>
+
+      <!-- Row 1: Streak and Duration -->
+      <div class="row gx-4" style="padding: 0 50px">
+        <!-- Improved Streak Section -->
+        <div class="col-lg-5 col-md-12 mb-4">
+          <div class="custom-padding rounded-4 shadow bg-white h-100">
+
+            <!-- Header aligned to top-left -->
+            <h2 class="container-header mb-3">Workout Streak</h2>
+
+            <!-- Centered wrapper for streak info -->
+            <div class="streak-wrapper my-auto">
+
+              <!-- Text column -->
+              <div class="streak-text">
+                <p id="noDays">
+                  <%= streak %>
+                </p>
+                <p id="days">days</p>
+              </div>
+
+              <!-- Ring column -->
+              <div class="streak-container">
+                <div class="streak-ring-wrapper">
+                  <svg class="streak-ring" viewBox="0 0 200 200" preserveAspectRatio="xMidYMid meet">
+                    <circle class="streak-bg" cx="100" cy="100" r="90" />
+                    <circle class="streak-progress" cx="100" cy="100" r="90" />
+                  </svg>
+                </div>
+                <div class="streak-content">
+                  <img src="/images/weightRing.png" alt="User" class="streak-image" />
+                </div>
+              </div>
+
+            </div>
+
+          </div>
+        </div>
+
+
+        <!-- Duration Section -->
+        <div class="col-lg-7 col-md-12 mb-4">
+          <div class="p-4 rounded-4 shadow bg-white h-100">
+            <h2 class="container-header">Duration in Minutes</h2>
+            <div style="
+                position: relative;
+                padding: 10px;
+                width: 100%;
+                height: 300px;
+              ">
+              <canvas id="durationBarChart" data-last7days-labels="<%= JSON.stringify(last7DaysLabels) %>"
+                data-last7days-durations="<%= JSON.stringify(last7DaysDurations) %>"
+                style="width: 100%; height: 200px; position: relative;"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Row 2: Calories and Workout Types -->
+      <div class="row gx-4" style="padding: 0 50px">
+        <!-- Calories Section -->
+        <div class="col-lg-7 col-md-12 mb-4">
+          <div class="p-4 rounded-4 shadow bg-white h-100">
+            <div class="calories-header">
+              <h2 class="container-header">Calories</h2>
+              <div class="view-selector">
+                <select class="form-select border-success" id="viewSelector" style="min-width: 140px;">
+                  <option value="monthly">Monthly View</option>
+                  <option value="weekly">Weekly View</option>
+                </select>
+              </div>
+            </div>
+
+            <div style="
+                position: relative;
+                padding: 10px;
+                width: 100%;
+                height: 300px;
+              ">
+              <canvas id="caloriesBarChart" 
+              data-monthly-calories="<%= JSON.stringify(monthlyCalories) %>"
+              data-weekly-calories="<%= JSON.stringify(weeklyCalories) %>" 
+              style="width: 100%; height: 100%"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- Workout Types Section -->
+        <div class="col-lg-5 col-md-12 mb-4">
+          <div class="p-4 rounded-4 shadow bg-white h-100">
+            <h2 class="container-header">Workout Types</h2>
+            <div style="
+                position: relative;
+                padding: 10px;
+                width: 100%;
+                height: 300px;
+              ">
+              <canvas id="workTypesPieChart" data-workout-types="<%= JSON.stringify(topWorkoutTypes) %>"
+                style="width: 100%; height: 100%"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Row 3: BMI and Weight -->
+      <div class="row gx-4" style="padding: 0 50px">
+        <!-- BMI Section -->
+        <div class="col-lg-5 col-md-12 mb-4">
+          <div class="p-4 rounded-4 shadow bg-white h-100">
+            <h2 class="container-header">Body Mass Index (BMI)</h2>
+
+            <!-- Height & Weight Cards Side-by-Side -->
+            <div class="row g-3 mx-3 mt-2">
+              <!-- Height Card -->
+              <div class="col-md-6">
+                <div class="p-3 rounded-4 shadow h-100" style="background-color: #e4efe7">
+                  <h4 class="info" id="info-header">Height</h4>
+                  <p class="info mb-0" id="info-value">
+                    <%= height %> cm
+                  </p>
+                </div>
+              </div>
+
+              <!-- Weight Card -->
+              <div class="col-md-6">
+                <div class="p-3 rounded-4 shadow h-100" style="background-color: #e4efe7">
+                  <h4 class="info" id="info-header">Weight</h4>
+                  <p class="info mb-0" id="info-value">
+                    <%= weight %> kg
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <!-- BMI Result Section -->
+            <div class="rounded-4 shadow p-4 my-3 mx-4" style="background-color: #efe3c2">
+              <div class="row g-3 align-items-center">
+                <h5 class="bmi">Body Mass Index<br />(BMI)</h5>
+                <!-- BMI Value -->
+                <div class="col-md-7">
+                  <p class="bmi fw-bold display-6 mb-0" id="bmi-value">
+                    <%= bmi %>
+                  </p>
+                </div>
+
+                <!-- BMI Status -->
+                <div class="col-md-5">
+                  <div class="rounded-4 shadow p-2 h-100 text-center" style="background-color: #faf1e6">
+                    <p class="bmi fw-bold mb-0" id="bmi-status">
+                      <%= bmiStatus %>
+                    </p>
+                  </div>
+                </div>
+
+                <!-- BMI Progress Bar with Pastel Gradient -->
+                <div class="mt-4 position-relative" style="padding-top: 30px;">
+                  <!-- BMI Bar -->
+                  <div class="bmi-bar position-relative w-100" style="height: 20px; border-radius: 10px;
+                      background: linear-gradient(to right, #B5D4F1, #81E5DB, #E8D284, #E2798E);">
+
+                    <!-- Indicator: Small Circle -->
+                    <div id="bmi-indicator"
+                      style="position: absolute; top: -25px; width: 16px; height: 16px; background-color: #D16564; border-radius: 50%; border: 2px solid white;">
+                    </div>
+                  </div>
+
+                  <!-- Tick Marks -->
+                  <div class="d-flex justify-content-between mt-2 px-1 text-muted" style="font-size: 0.8rem;">
+                    <span>10</span>
+                    <span>15</span>
+                    <span>20</span>
+                    <span>25</span>
+                    <span>30</span>
+                    <span>35</span>
+                    <span>40</span>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Weight Progress Section -->
+        <div class="col-lg-7 col-md-12 mb-4">
+          <div class="p-4 rounded-4 shadow bg-white h-100">
+            <h2 class="container-header">Weight Progress Chart</h2>
+            <div class="d-flex justify-content-between align-items-center my-5">
+              <canvas id="weightProgressChart" 
+              data-weight-labels='<%= JSON.stringify(weightHistoryLabels) %>'
+              data-weight-data='<%= JSON.stringify(weightHistoryData) %>'
+              style="width: 100%; height: 350px;"></canvas>
+
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Scripts -->
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/js/bootstrap.bundle.min.js"
+      integrity="sha384-k6d4wzSIapyDyv1kpU366/PK5hCdSbCRGRCMv+eplOQJWyd1fbcAu9OCUj5zNLiq"
+      crossorigin="anonymous"></script>
+    <script type="text/javascript" src="/script/ProgressChart_script.js"></script>
+    <!-- Footer -->
+    <%- include("partials/footer", {scriptFile:"LandingPage_script.js"}) %>

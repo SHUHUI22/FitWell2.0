@@ -68,9 +68,11 @@ const requireLogin = (req, res, next) => {
 // Import routes
 const LandingPageRoute = require("./routes/LandingPageRoute");
 const authRoute = require("./routes/authRoute");
+const userRoute = require("./routes/user");
 const ProfileRoute = require("./routes/ProfileRoute");
 const FitnessRoute = require("./routes/FitnessRoute");
 const HistoryRoute = require("./routes/HistoryRoute");
+const ProgressChartRoute = require("./routes/ProgressChartRoute");
 const NutritionPlannerRoute = require("./routes/NutritionPlannerRoute");
 const MealSuggestionRoute = require("./routes/MealSuggestionRoute");
 const MealLoggingRoute = require("./routes/MealLoggingRoute");
@@ -82,9 +84,11 @@ const AuthStatusRoute = require("./routes/AuthStatusRoute");
 // Use routes
 app.use('/FitWell', LandingPageRoute);
 app.use('/FitWell', authRoute);
+app.use('/api/user', userRoute);
 app.use('/FitWell', requireLogin, ProfileRoute);
 app.use('/FitWell', requireLogin, FitnessRoute);
 app.use('/FitWell', requireLogin, HistoryRoute);
+app.use('/FitWell', ProgressChartRoute);
 app.use('/FitWell', requireLogin, NutritionPlannerRoute);
 app.use('/FitWell', requireLogin, MealSuggestionRoute);
 app.use('/FitWell', requireLogin, MealLoggingRoute);
