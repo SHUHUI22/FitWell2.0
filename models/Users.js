@@ -59,27 +59,6 @@ const userSchema = new mongoose.Schema({
     enum: ["male", "female"],
     required: true,
   },
-  resetPasswordToken: { type: String },
-  resetPasswordExpires: { type: Date },
-        required: true
-    },
-    weight: {
-        type: Number,
-        required: true
-    },
-    weightHistory: {
-    type: [weightEntrySchema],
-    default: []
-    },
-    targetWeight: {
-        type: Number,
-        required: true
-    },
-    gender: {
-        type: String,
-        enum: ["male","female"],
-        required: true
-    },
     profilePic: {
         data: Buffer,
         contentType: String

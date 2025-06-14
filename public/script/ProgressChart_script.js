@@ -1,60 +1,13 @@
 document.addEventListener("DOMContentLoaded", function () {
-    const nav = document.querySelector(".navbar");
-    const features = document.querySelectorAll(".card");
-    const isLoggedIn = localStorage.getItem("loggedIn");
-
-    // Check if user is logged in
-    if (isLoggedIn === "true") {
-        document.body.classList.add("logged-in");
-
-        // Show the hidden nav and quicklink items
-        const showIds = [
-            "nav_tracker", "nav_nutrition", "nav_progress", "nav_reminder", "nav_profile",
-            "quicklink_tracker", "quicklink_progress", "quicklink_nutrition", "quicklink_reminder"
-        ];
-        showIds.forEach(id => {
-            const el = document.getElementById(id);
-            if (el) el.classList.remove("d-none");
-        });
-
-        // Hide login/signup/get-started buttons
-        const btn_login = document.querySelector("#btn_login");
-        const btn_signup = document.querySelector("#btn_signup");
-        const btn_get_started = document.querySelector("#btn_get_started");
-
-        if (btn_login) btn_login.classList.add("d-none");
-        if (btn_signup) btn_signup.classList.add("d-none");
-        if (btn_get_started) btn_get_started.classList.add("d-none");
-
-        // Card feature redirection
-        const buttons = document.querySelectorAll(".btn_feature");
-        buttons.forEach(button => {
-            button.addEventListener("click", function () {
-                const card = button.closest(".card");
-                const link = card.getAttribute("data-link");
-                if (link) {
-                    console.log("Redirecting to:", link);
-                    window.location.href = link;
-                }
-            });
-        });
-    }
-
     // Automatically highlight the correct nav link based on current page
     const currentPage = window.location.pathname.split("/").pop();
     const navLinks = document.querySelectorAll(".nav-link");
 
     navLinks.forEach(link => {
         const href = link.getAttribute("href");
-        // Check if the href contains the current page name or ends with it
-        if (href && (href.includes(currentPage) || href.endsWith(currentPage) || 
-            (currentPage === "ProgressChart.html" && href.includes("ProgressChart.html")))) {
+
+        if (href && href.includes(currentPage)) {
             link.classList.add("active");
-            
-            // Add green highlight for Progress Chart
-            if (currentPage === "ProgressChart.html") {
-                link.classList.add("active-green");
-            }
         }
     });
 
@@ -527,32 +480,6 @@ function updateBMIIndicator(bmi) {
   
   // Recalculate on window resize
   window.addEventListener('resize', () => updateBMIIndicator(bmi));
-  
-
-// Scroll-based nav highlighting (only relevant if you stay on a single page)
-window.addEventListener('scroll', function () {
-    const sections = document.querySelectorAll('main section');
-    const navLinks = document.querySelectorAll('.nav-link');
-
-    let current = '';
-    sections.forEach(section => {
-        const sectionTop = section.offsetTop;
-        const sectionHeight = section.clientHeight;
-        if (pageYOffset >= sectionTop - sectionHeight / 3) {
-            current = section.getAttribute('id');
-        }
-    });
-
-    navLinks.forEach(link => {
-        const href = link.getAttribute('href');
-        if (href && href.startsWith('#')) {
-            link.classList.remove('active');
-            if (href === '#' + current) {
-                link.classList.add('active');
-            }
-        }
-    });
-});
 
 function initializeWeightProgressChart() {
     const ctx = document.getElementById('weightProgressChart');
@@ -704,26 +631,4 @@ function initializeWeightProgressChart() {
             }
         },
     });
-}
-
-// Logout functionality
-const btn_logout = document.querySelector("#btn_logout");
-btn_logout.addEventListener("click", logout);
-
-function logout() {
-    // Retain the 'mealFavourites' in localStorage, clear other data
-    const favourites = localStorage.getItem('mealFavourites');
-
-    // Clear all other data in localStorage
-    localStorage.clear();
-
-    // Restore the 'mealFavourites' back to localStorage
-    if (favourites) {
-        localStorage.setItem('mealFavourites', favourites);
-    }
-
-    // Redirect after a slight delay
-    setTimeout(function () {
-        window.location.href = "Login.html";
-    }, 500);
 }
