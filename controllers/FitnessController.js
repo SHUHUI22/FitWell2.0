@@ -82,8 +82,8 @@ async function createWorkout(req,res) {
         await newWorkout.save();
 
         // Update today summary
-        const today = new Date().toISOString().split('T')[0];
-        const existingSummary = await Summary.findOne({ userId, date: today });
+        const workoutDate = new Date(date).toISOString().split('T')[0];
+        const existingSummary = await Summary.findOne({ userId, date: workoutDate });
 
         if(existingSummary){
             // Update existing summary values 
@@ -113,7 +113,7 @@ async function createWorkout(req,res) {
             }
             const newSummary = new Summary({
                 userId,
-                date: today,
+                date: workoutDate,
                 steps: step,
                 stepGoal: 10000,
                 distance: dis,
