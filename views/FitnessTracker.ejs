@@ -1,0 +1,162 @@
+<!-- Head -->
+<%- include("partials/head",{title: "FitWell" , cssFile: "FitnessTracker.css" }) %>
+
+    <!-- Navigation bar -->
+    <%- include("partials/nav") %>
+
+    <!-- Contains the web page document’s main content  -->
+    <main id="FitnessTracker">
+        <div class="container py-1"> 
+            <div class="row">
+                <div class="col-md-5 my-auto">
+                <!-- Log Workout -->
+                    <section id="logWork" class="container">
+                    <h2 class="fw-bold mb-4">Log Workout</h2>
+
+                    <form id="logWorkout_form" method="post" action="/FitWell/fitness">
+                    <div class="input-log ">
+                         <label for="workoutType" >Workout Type</label><br>
+                         <select id="workoutType" name="workoutType" required>
+                             <option selected value="Cycling">Cycling</option>
+                             <option value="Running">Running</option>
+                             <option value="Aerobic">Aerobic</option>
+                             <option value="Yoga">Yoga</option>
+                             <option value="Zumba">Zumba</option>
+                         </select>
+                    </div>
+                    <div class="input-log">
+                         <label for="duration">Duration</label><br>
+                         <input id="duration" name="duration" type="number" placeholder="in minutes" required>
+                    </div>
+                    <div>
+                         <label for="date">Date</label><br>
+                         <input id="date" name="date" type="datetime-local" required>
+                    </div>
+                    <div class="input-log">
+                        <label for="workoutDetail">Workout Detail</label><br>
+                        <input id="workoutDetail" name="detail" type="text" placeholder="Distance (in km)" required>
+                    </div>
+                    <input type="hidden" id="caloriesBurned" name="caloriesBurned" />
+
+                    <div>
+                         <button id="btn_record" form="logWorkout_form" 
+                         class="btn btn-lg px-5 mx-auto d-block border border-2 rounded-pill">
+                         Record</button>
+                    </div>   
+                    </form>
+                    </section>
+                </div>
+
+                <div class="col-md-7">
+                    <div class="row px-4">
+                         <div class="col-md-12">
+                             <!-- Today's Summary -->
+                             <section id="todaySummary" class="container my-3">
+                             <h2 class="fw-bold mb-4">Today's Summary</h2>
+                             <div class="summary_content">
+                                 
+                            <!--Circular Steps Ring-->
+                            <div class="streak-container position-relative">
+                                <svg class="streak-ring" width="140" height="140">
+                                  <circle class="streak-bg" cx="70" cy="70" r="60" 
+                                  stroke="#99BC85" stroke-width="12" fill="none"/>
+                                  <circle class="streak-progress" cx="70" cy="70" r="60"
+                                  stroke="#123524" stroke-width="12" fill="none"
+                                  stroke-linecap="round"
+                                  stroke-dasharray="376.99" stroke-dashoffset="94.25" />
+                                </svg>
+
+                                <!-- Center content -->
+                                <div class="streak-content position-absolute top-50 start-50 translate-middle text-center">
+                                    <p id="stepCount" class="current-step fw-bold mt-2 mb-1" data-value="<%= steps || 0 %>"><%= steps%></p>
+                                    <large class="large text-muted mt-1">steps</large>
+                                    <div class="step-goal text-muted mb-2" id="goalValue" data-value="<%= stepGoal || 10000 %>">Goal : <%= stepGoal%></div>
+                                </div>
+                            </div>    
+                                  
+                            <div class="d-flex flex-column mt-2 pe-5 ms-3 align-items-start">                      
+                                <div class="row-md-4">
+                                    <div class="summary-icon mb-3">
+                                        <i class="fas fa-location-dot me-2"></i> <span><%= distance %> km</span>
+                                    </div>
+                                </div>
+                                <div class="row-md-4">
+                                    <div class="summary-icon mb-3">
+                                        <i class="fas fa-fire me-2"></i> <span><%= caloriesBurned%> kcal</span>
+                                    </div>
+                                </div>
+                                <div class="row-md-4">
+                                    <div class="summary-icon">
+                                        <i class="fas fa-stopwatch me-2"></i> <span><%= duration%> min</span>
+                                    </div>
+                                </div>                             
+                            </div> 
+                            <div class="mt-4">
+                                <form action="/FitWell/Fitness/updateStepGoal" method="POST">
+                                    <label for="stepGoal" class="form-label fw-semibold">Daily Step Goal</label>
+                                    <input id="stepGoal" name="stepGoal" type="number" class="form-control" placeholder="(e.g., 10000)" min="1000"/>
+                                    <button id="btn-set-goal" type="submit" class="btn btn-lg px-5 mx-auto d-block border border-2 rounded-pill">Set Goal</button>
+                                </form>
+                            </div>                        
+                            </div>
+                            </section>
+
+                            <div class="col-md-12 mt-3">
+                             <!-- Activity History -->
+                            <section id="activityHistory" class="container my-3">
+                            <h2 class="fw-bold mb-4">Activity History 
+                                <a id="btn-view-more" href="/FitWell/Activities" class=" btn-sm text-decoration-none">
+                                    <i class="fas fa-chevron-right fs-5"></i>
+                                </a>
+                            </h2>
+                            <% if (recentHistory && recentHistory.length > 0 ) {%>
+                                <% recentHistory.forEach(workout => { %>
+                                <div class="history-item">
+                                    
+                                        <div class="d-flex align-items-center gap-3">
+                                            <i class="fas <%= workout.icon %> history-icon fs-3"></i>
+                                            <div>
+                                                <div><strong><%= new Date(workout.date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' }) %></strong></div>
+                                                <div class="text-muted"><%= workout.workoutType.charAt(0).toUpperCase() + workout.workoutType.slice(1) %></div>
+                                            </div>
+                                        </div>
+
+                                        <div class="fs-5 fw-semibold">
+                                            <% if (workout.workoutType == "Cycling") { %>
+                                                <%= workout.detail %> km
+                                            <% } else if(workout.workoutType == "Running") { %>
+                                                <%= workout.detail %> steps
+                                            <% } else { %>
+                                                <%= workout.detail %>
+                                            <% } %>
+                                        </div>
+                                        <div class="text-end">
+                                            <div>
+                                                <%= workout.duration %> min
+                                            </div>
+                                            <div>
+                                                <%= workout.caloriesBurned %> kcal
+                                            </div>
+                                        </div>
+                                    
+                                </div>
+                                <% }) %>
+                             <% } else { %>
+                                <p>No recent workouts found.</p>
+                             <% } %>              
+                            
+                            </section>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Hidden input example -->
+    <input type="hidden" id="userWeight" value="<%= weight %>">
+
+    <!-- Footer -->
+    <%- include("partials/footer", {scriptFile:"FitnessTracker_script.js"}) %>

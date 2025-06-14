@@ -12,12 +12,24 @@
   "dependencies": {
     "bcrypt": "^6.0.0",
     "connect-mongo": "^5.1.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.5.0",
     "ejs": "^3.1.10",
     "express": "^5.1.0",
     "express-session": "^1.18.1",
     "mongodb": "^6.16.0",
     "mongoose": "^8.15.0",
+    "multer": "^2.0.1",
     "nodemailer": "^7.0.3",
     "nodemon": "^3.1.10"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SHUHUI22/FitWell2.0.git"
+  },
+  "keywords": [],
+  "bugs": {
+    "url": "https://github.com/SHUHUI22/FitWell2.0/issues"
+  },
+  "homepage": "https://github.com/SHUHUI22/FitWell2.0#readme"
 }

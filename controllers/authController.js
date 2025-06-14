@@ -51,6 +51,8 @@ async function signUpUser(req, res) {
             weightHistory: 
             [{
                 weight: weight,
+            weightHistory: [{
+                weight,
                 date: new Date()
             }]
         });
@@ -83,6 +85,7 @@ async function loginUser(req, res) {
 
         req.session.userId = user._id;
         req.session.username = user.username;
+        req.session.email= user.email;
 
         return res.redirect("/FitWell");
     }

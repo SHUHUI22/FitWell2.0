@@ -20,7 +20,6 @@ if (btn_get_started) {
     });
 }
 
-// *Need modify
 const buttons = document.querySelectorAll(".btn_feature");
 buttons.forEach(button => {
     button.addEventListener("click", function () {
@@ -32,34 +31,49 @@ buttons.forEach(button => {
     });
 });
 
-// Highlighting the nav link on click
-const navLinks = document.querySelectorAll(".nav-link");
-navLinks.forEach(link => {
-    link.addEventListener("click", function () {
-        navLinks.forEach(nav => nav.classList.remove("active"));
-        this.classList.add("active");
-    });
-});
+document.addEventListener("DOMContentLoaded", () => {
+  const navLinks = document.querySelectorAll(".nav-link");
+  const sections = document.querySelectorAll("main section");
 
-// Highlight nav link when scrolling
-window.addEventListener('scroll', function () {
-    const sections = document.querySelectorAll('main section');
-    const navLinks = document.querySelectorAll('.nav-link');
-
-    let current = '';
-
-    sections.forEach(section => {
-        const sectionTop = section.offsetTop;
-        const sectionHeight = section.clientHeight;
-        if (pageYOffset >= sectionTop - sectionHeight / 3) {
-            current = section.getAttribute('id');
-        }
-    });
-
+  // Function to highlight the nav link that matches the given section ID
+  function setActiveLinkById(id) {
     navLinks.forEach(link => {
-        link.classList.remove('active');
-        if (link.getAttribute('href') === '#' + current) {
-            link.classList.add('active');
-        }
+      const linkId = link.getAttribute("href").split("#")[1];
+      link.classList.toggle("active", linkId === id);
     });
+  }
+
+  // Function to determine the current section in view and highlight its nav link
+  function highlightOnScroll() {
+    let current = "";
+    sections.forEach(section => {
+      const top = section.offsetTop;
+      const height = section.offsetHeight;
+      if (window.pageYOffset >= top - height / 3) {
+        current = section.id;
+      }
+    });
+    if (current) setActiveLinkById(current);
+  }
+
+  // Add click event to all nav links
+  navLinks.forEach(link => {
+    link.addEventListener("click", (e) => {
+      const hash = link.getAttribute("href");
+      const id = hash.split("#")[1];
+      setActiveLinkById(id);
+    });
+  });
+
+  // Handle initial page load with hash (e.g., accessing /FitWell/#features directly)
+  const initialHash = window.location.hash;
+  if (initialHash) {
+    const id = initialHash.replace("#", "");
+    setTimeout(() => {
+      setActiveLinkById(id);
+    }, 10);
+  }
+
+  // Highlight nav link while scrolling through sections
+  window.addEventListener("scroll", highlightOnScroll);
 });

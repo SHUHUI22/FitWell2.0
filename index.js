@@ -29,6 +29,9 @@ app.use(express.static(path.join(__dirname,'public')));
 // To parse form data in POST request body:
 app.use(express.urlencoded({ extended: true })); 
 
+//To parse JSON request body:
+app.use(express.json());
+
 // Session middleware
 const session = require("express-session");
 const MongoStore = require("connect-mongo");
@@ -51,19 +54,49 @@ app.use((req, res, next) => {
     next();
 });
 
+
+app.use(express.json());
+
+const requireLogin = (req, res, next) => {
+    if (!req.session.userId) {
+        return res.redirect('/FitWell/Login')
+    }
+    next();
+}
+
+
 // Import routes
 const LandingPageRoute = require("./routes/LandingPageRoute");
 const authRoute = require("./routes/authRoute");
-const ProgressChartRoute = require("./routes/ProgressChartRoute");
 const userRoute = require("./routes/user");
+const ProfileRoute = require("./routes/ProfileRoute");
+const FitnessRoute = require("./routes/FitnessRoute");
+const HistoryRoute = require("./routes/HistoryRoute");
+const ProgressChartRoute = require("./routes/ProgressChartRoute");
+const NutritionPlannerRoute = require("./routes/NutritionPlannerRoute");
+const MealSuggestionRoute = require("./routes/MealSuggestionRoute");
+const MealLoggingRoute = require("./routes/MealLoggingRoute");
+const FavouriteMealRoute = require("./routes/FavouriteMealRoute");
+const CalculatorRoute = require("./routes/CalculatorRoute");
+const AuthStatusRoute = require("./routes/AuthStatusRoute");
 // ...
 
 // Use routes
 app.use('/FitWell', LandingPageRoute);
 app.use('/FitWell', authRoute);
-app.use('/FitWell', ProgressChartRoute);
 app.use('/api/user', userRoute);
+app.use('/FitWell', requireLogin, ProfileRoute);
+app.use('/FitWell', requireLogin, FitnessRoute);
+app.use('/FitWell', requireLogin, HistoryRoute);
+app.use('/FitWell', ProgressChartRoute);
+app.use('/FitWell', requireLogin, NutritionPlannerRoute);
+app.use('/FitWell', requireLogin, MealSuggestionRoute);
+app.use('/FitWell', requireLogin, MealLoggingRoute);
+app.use('/FitWell', requireLogin, FavouriteMealRoute);
+app.use('/FitWell', requireLogin, CalculatorRoute);
+app.use('/FitWell', AuthStatusRoute);
 // ...
+
 
 // 404 error handler 
 app.use((req, res) => {

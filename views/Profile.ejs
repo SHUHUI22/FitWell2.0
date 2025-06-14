@@ -1,0 +1,206 @@
+<!-- Head -->
+<%- include("partials/head",{title: "FitWell" , cssFile: "Profile_style.css" }) %>
+
+ <!-- Navigation bar -->
+    <%- include("partials/nav") %>
+
+     <!-- Contains the web page document’s main content  -->
+      <main>
+        
+        <div class="container py-4">
+          <div class="profile-settings-wrapper">
+            <section class="profile">
+              <% if (user.profilePic && user.profilePic.data) { %>
+                <img src="data:<%= user.profilePic.contentType %>;base64,<%= user.profilePic.data.toString('base64') %>" class="avatar" id="profilePic"/>
+              <% } else { %>
+                <img src="/images/signup&login.jpg" class="avatar" id="profilePic"/>
+              <% } %>
+              <h2><%= user.username %></h2>
+              <div class="info-row"><span><strong>Email</strong></span><span><%= user.email %></span></div>
+              <div class="info-row"><span><strong>Age</strong></span><span><%= user.age %></span></div>
+              <div class="info-row">
+              <span><strong>Gender</strong></span>
+              <span><%= user.gender.charAt(0).toUpperCase() + user.gender.slice(1) %></span>
+              </div>
+              <div class="info-row"><span><strong>Height</strong></span><span><%= user.height %> m</span></div>
+              <div class="info-row"><span><strong>Weight</strong></span><span><%= user.weight %> kg</span></div>
+              <div class="info-row"><span><strong>Target Weight</strong></span><span><%= user.targetWeight %> kg</span></div>
+
+            </section>
+
+            <section class="settings">
+              <h2>Settings</h2>
+              <div class="setting-group">
+                <h3>Notification</h3>
+                <label class="toggle-switch">
+                  <span>Workout</span>
+                  <input type="checkbox" class="notification-toggle" data-category="workout" 
+                  <%= notificationSettings.workout ? 'checked' : '' %> />
+                  <span class="slider"></span>
+                </label>
+                <label class="toggle-switch">
+                  <span>Nutrition</span>
+                   <input type="checkbox" class="notification-toggle" data-category="nutrition" 
+                   <%= notificationSettings.nutrition ? 'checked' : '' %> />
+                  <span class="slider"></span>
+                </label>
+                <label class="toggle-switch">
+                  <span>Water</span>
+                  <input type="checkbox" class="notification-toggle" data-category="water"
+                  <%= notificationSettings.water ? 'checked' : '' %> />
+                  <span class="slider"></span>
+                </label>
+              </div>
+              <hr />
+              <button id="changePassword" data-bs-toggle="modal" data-bs-target="#changePasswordModal">Change Password</button>
+              <button id="updateProfile" data-bs-toggle="modal" data-bs-target="#updateProfileModal">Update Profile</button>
+
+              <button id="deleteAccount" class="delete">Delete Account</button>
+            </section>
+          </div>
+        </div>
+
+       <!-- Change Password Modal -->
+      <div class="modal fade" id="changePasswordModal" tabindex="-1" aria-labelledby="changePasswordLabel" aria-hidden="true">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="changePasswordLabel">Change Password</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+              <form id="changePasswordForm" method="POST" action="/FitWell/changePassword">
+                <div class="mb-3">
+                  <label for="currentPassword" class="form-label">Current Password</label>
+                  <input type="password" class="form-control" id="currentPassword" name="currentPassword" required>
+                  <% if (typeof passwordError !== 'undefined') { %>
+                    <div class="text-danger mb-2" id="currentPasswordError"><%= passwordError %></div>
+                    <input type="hidden" id="showChangePasswordModal" value="true">
+                  <% } %>
+                </div>
+                <div class="mb-3">
+                  <label for="newPassword" class="form-label">New Password</label>
+                  <input type="password" class="form-control" id="newPassword" name="newPassword" required>
+                </div>
+                <div id="newPasswordError" class="text-danger d-none">Password must contain at least 8 characters, including uppercase, lowercase, and a number.</div>
+                <div class="mb-3">
+                  <label for="confirmPassword" class="form-label">Confirm New Password</label>
+                  <input type="password" class="form-control" id="confirmPassword" name="confirmPassword" required>
+                </div>
+                <div id="confirmNewPasswordError" class="text-danger d-none">Passwords do not match.</div>
+                <button type="submit" class="btn-primary" id="saveNewPassword">Update Password</button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+
+
+      <!-- Update Profile Modal -->
+      <div class="modal fade" id="updateProfileModal" tabindex="-1" aria-labelledby="updateProfileLabel" aria-hidden="true">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="updateProfileLabel">Update Profile</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+              <form method="POST" action="/FitWell/Profile" enctype="multipart/form-data">
+                <div class="mb-3">
+                   <% if (user.profilePic && user.profilePic.data) { %>
+                      <img src="data:<%= user.profilePic.contentType %>;base64,<%= user.profilePic.data.toString('base64') %>" 
+                          class="avatar mb-2" 
+                          id="modalProfilePicPreview" />
+                    <% } else { %>
+                      <img src="/images/signup&login.jpg" 
+                          class="avatar mb-2" 
+                          id="modalProfilePicPreview" />
+                    <% } %>
+                </div>
+                <div class="mb-3">
+                  <label for="modalUsername" class="form-label">Username</label>
+                  <input type="text" class="form-control" id="modalUsername" name="username" value="<%= user.username %>" required>
+                </div>
+                <div class="mb-3">
+                  <label for="modalEmail" class="form-label">Email</label>
+                  <input type="email" class="form-control" id="modalEmail" name="email" value="<%= user.email %>" disabled>
+                </div>
+                <div class="mb-3">
+                  <label for="modalAge" class="form-label">Age</label>
+                  <input type="number" class="form-control" id="modalAge" name="age" value="<%= user.age %>" required>
+                </div>
+                <div class="mb-3">
+                  <label for="modalGender" class="form-label">Gender</label>
+                  <select id="modalGender" name="gender" class="form-control">
+                    <option value="male" <%= user.gender === 'male' ? 'selected' : '' %>>Male</option>
+                    <option value="female" <%= user.gender === 'female' ? 'selected' : '' %>>Female</option>
+                  </select>
+                </div>
+                <div class="mb-3">
+                  <label for="modalHeight" class="form-label">Height (cm)</label>
+                    <input type="number" step="0.01" class="form-control" id="modalHeight" name="height" value="<%= user.height %>" required>
+                </div>
+                <div class="mb-3">
+                  <label for="modalWeight" class="form-label">Weight (kg)</label>
+                  <input type="number" step="0.1" class="form-control" id="modalWeight" name="weight" value="<%= user.weight %>" required>
+                </div>
+                <div class="mb-3">
+                  <label for="modalTargetWeight" class="form-label">Target Weight (kg)</label>
+                  <input type="number" step="0.1" class="form-control" id="modalTargetWeight" name="targetWeight" value="<%= user.targetWeight %>" required>
+                </div>
+                <div class="mb-3">
+                  <label for="modalProfilePic" class="form-label">Profile Picture</label>
+                  <input type="file" class="form-control" id="modalProfilePic" name="profilePic" accept="image/*">
+                </div>
+                <button type="submit" id="saveProfileChanges" class="btn-primary">Save Changes</button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+
+
+      <!-- Delete Account Confirmation Modal -->
+      <div class="modal fade" id="deleteAccountModal" tabindex="-1" aria-labelledby="deleteAccountLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+          <div class="modal-content">
+
+            <div class="modal-header">
+              <h5 class="modal-title" id="deleteAccountLabel">Confirm Account Deletion</h5>
+            </div>
+
+            <div class="modal-body">
+              <p>Are you sure you want to permanently delete your account? This action cannot be undone.</p>
+            </div>
+
+          <!-- Wrap BOTH buttons in a flex container -->
+      <!-- Flex container for centered, equally sized buttons with a gap -->
+      <div class="d-flex justify-content-center gap-4 w-100">
+        <!-- Cancel button -->
+        <button type="button" class="btn btn-secondary flex-fill rounded-5" style="max-width: 150px;" data-bs-dismiss="modal">
+          Cancel
+        </button>
+
+        <!-- Delete Account form + button -->
+        <form method="POST" action="/FitWell/Profile/DeleteAccount" class="d-inline flex-fill" style="max-width: 150px;">
+          <button type="submit" class="btn btn-danger w-100 rounded-5">
+            Delete Account
+          </button>
+        </form>
+      </div>
+          </div>
+        </div>
+      </div>
+
+      
+      <div id="profile-flags"
+          data-password-error="<%= passwordError ? 'true' : 'false' %>"
+          data-password-success="<%= passwordChangedSuccess ? 'true' : 'false' %>">
+      </div>
+
+
+      </main>
+
+
+  <!-- Footer -->
+  <%- include("partials/footer", {scriptFile:"Profile_script.js"}) %>
