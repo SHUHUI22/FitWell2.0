@@ -83,6 +83,7 @@ body {
     border-bottom: 1px solid #eee;
 }
 
+
 .reminder-details {
     display: flex;
     align-items: center;
@@ -125,6 +126,7 @@ body {
 .reminder-actions {
     display: flex;
 }
+
 
 .action-btn {
     background: none;
