@@ -22,7 +22,7 @@
         </div>
       <% } %>
 
-      <!-- Empty state / Reminder list  -->
+      <!-- Empty state / Reminder list -->
       <% if (!reminders || reminders.length === 0) { %>
         <div class="empty-state" id="empty-state">
           <img src="/images/bell.png" alt="Reminder Bell" />
@@ -32,7 +32,9 @@
         <h2 class="reminder-title">My Reminders</h2>
         <div class="reminder-list" id="reminder-list">
           <% reminders.forEach(r => { 
-               const isoDate = new Date(r.date).toISOString().substring(0,10);
+            const dateStr = new Date(r.date).toISOString().split("T")[0]; // e.g., 2025-07-02
+            const timeStr = r.time.padStart(5, '0'); // ensure time is always HH:mm
+            const capitalizedRepeat = r.repeat.charAt(0).toUpperCase() + r.repeat.slice(1);
           %>
             <div class="reminder-item" data-id="<%= r._id %>">
               <div class="reminder-details">
@@ -42,20 +44,19 @@
                 <div>
                   <div class="reminder-text"><%= r.title %></div>
                   <div class="reminder-time">
-                    <%= r.date %> at <%= r.time %> - <%= r.repeat.charAt(0).toUpperCase() + r.repeat.slice(1) %>
+                    <%= dateStr %> at <%= timeStr %> - <%= capitalizedRepeat %>
                   </div>
                 </div>
               </div>
 
               <div class="reminder-actions">
-                <!-- full data‑payload on the edit button -->
                 <button class="action-btn edit-btn"
                         data-bs-toggle="modal"
                         data-bs-target="#editModal"
                         data-id="<%= r._id %>"
                         data-title="<%= r.title.replace(/"/g,'&quot;') %>"
                         data-category="<%= r.category %>"
-                        data-date="<%= isoDate %>"
+                        data-date="<%= dateStr %>"
                         data-time="<%= r.time %>"
                         data-repeat="<%= r.repeat %>">
                   <img src="/images/edit.png" alt="edit-btn" />
@@ -117,7 +118,7 @@
               </div>
               <div class="mb-3">
                 <label for="editDate" class="form-label">Date</label>
-                <input type="date" class="form-control" id="editDate">
+                <input type="date" class="form-control" id="editDate" required>
               </div>
               <div class="mb-3">
                 <label for="editTime" class="form-label">Time</label>
@@ -136,7 +137,7 @@
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-            <button type="button" class="btn btn-primary" id="saveEdit">Save Changes</button>
+            <button type="button" class="btn btn-primary" id="saveEditBtn">Save Changes</button>
           </div>
         </div>
       </div>
@@ -147,16 +148,16 @@
   </div>
 
   <!-- Toast (success popup) -->
-<div class="toast-container position-fixed bottom-0 end-0 p-3">
-  <div id="reminderToast"
-       class="toast align-items-center text-white bg-success border-0"
-       role="alert" aria-live="assertive" aria-atomic="true">
-    <div class="d-flex">
-      <div id="toastMessage" class="toast-body">Done!</div>
-      <button type="button" class="btn-close btn-close-white m-auto"
-              data-bs-dismiss="toast" aria-label="Close"></button>
+  <div class="toast-container position-fixed bottom-0 end-0 p-3">
+    <div id="reminderToast"
+         class="toast align-items-center text-white bg-success border-0"
+         role="alert" aria-live="assertive" aria-atomic="true">
+      <div class="d-flex">
+        <div id="toastMessage" class="toast-body">Done!</div>
+        <button type="button" class="btn-close btn-close-white m-auto"
+                data-bs-dismiss="toast" aria-label="Close"></button>
+      </div>
     </div>
   </div>
-</div>
 
 </body>

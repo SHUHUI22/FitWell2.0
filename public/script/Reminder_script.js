@@ -1,158 +1,245 @@
 document.addEventListener('DOMContentLoaded', function () {
-    const isLoggedIn = localStorage.getItem("loggedIn");
+    // Initialize the reminder system
+    const reminderSystem = new ReminderManager();
+    reminderSystem.init();
+    
+    // Handle general UI interactions
+    handleUIInteractions();
+});
 
-    if (isLoggedIn === "true") {
-        handleLoggedInState();
+class ReminderManager {
+    constructor() {
+        this.remindersList = document.querySelector('#reminder-list');
+        this.emptyState = document.querySelector('#empty-state');
+        this.reminderToDelete = null;
+        this.reminderToEdit = null;
+        this.deleteModal = null;
     }
 
-    function handleLoggedInState() {
-        document.body.classList.add("logged-in");
+    init() {
+        this.setupDeleteModal();
+        this.setupEventListeners();
+        this.updateEmptyState();
+    }
 
-        const showIds = [
-            "nav_tracker", "nav_nutrition", "nav_progress", "nav_reminder", "nav_profile",
-            "quicklink_tracker", "quicklink_progress", "quicklink_nutrition", "quicklink_reminder"
-        ];
-        showIds.forEach(id => {
-            const el = document.getElementById(id);
-            if (el) el.classList.remove("d-none");
-        });
+    setupDeleteModal() {
+        const deleteModalElement = document.getElementById('deleteModal');
+        if (deleteModalElement && typeof bootstrap !== 'undefined') {
+            this.deleteModal = new bootstrap.Modal(deleteModalElement);
+        }
+    }
 
-        const btn_login = document.querySelector("#btn_login");
-        const btn_signup = document.querySelector("#btn_signup");
-        const btn_get_started = document.querySelector("#btn_get_started");
-
-        if (btn_login) btn_login.classList.add("d-none");
-        if (btn_signup) btn_signup.classList.add("d-none");
-        if (btn_get_started) btn_get_started.classList.add("d-none");
-
-        const buttons = document.querySelectorAll(".btn_feature");
-        buttons.forEach(button => {
-            button.addEventListener("click", function () {
-                const card = button.closest(".card");
-                const link = card.getAttribute("data-link");
-                if (link) {
-                    window.location.href = link;
-                }
+    setupEventListeners() {
+        // Reminder list event delegation
+        if (this.remindersList) {
+            this.remindersList.addEventListener('click', (event) => {
+                this.handleReminderClick(event);
             });
-        });
-    }
-
-    const currentPage = window.location.pathname.split("/").pop();
-    const navLinks = document.querySelector("#nav_reminder a");
-
-    const isReminderPage = currentPage === "CreateReminder.html" || currentPage === "MyReminder.html";
-    if (isReminderPage && navLinks) {
-        navLinks.classList.add("active");
-    }
-
-    const btn_logout = document.querySelector("#btn_logout");
-    if (btn_logout) {
-        btn_logout.addEventListener("click", logout);
-    }
-
-    function logout() {
-        const favorites = localStorage.getItem('mealFavourites');
-        localStorage.clear();
-        if (favorites) {
-            localStorage.setItem('mealFavourites', favorites);
         }
-        setTimeout(() => {
-            window.location.href = "Login.html";
-        }, 500);
-    }
 
-    const remindersList = document.querySelector('#reminder-list');
-    const emptyState = document.querySelector('#empty-state');
-    let reminderToDelete = null;
-    let reminderToEdit = null;
-
-    function updateEmptyState() {
-        const hasReminders = remindersList && remindersList.querySelectorAll('.reminder-item').length > 0;
-        if (emptyState) {
-            emptyState.style.display = hasReminders ? 'none' : 'block';
+        // Confirm delete button
+        const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
+        if (confirmDeleteBtn) {
+            confirmDeleteBtn.addEventListener('click', () => {
+                this.confirmDelete();
+            });
         }
-        if (remindersList) {
-            remindersList.style.display = hasReminders ? 'block' : 'none';
+
+        // Save edit button
+        const saveEditBtn = document.getElementById('saveEditBtn');
+        if (saveEditBtn) {
+            saveEditBtn.addEventListener('click', () => {
+                this.saveReminderEdits();
+            });
         }
     }
 
-    updateEmptyState();
+    handleReminderClick(event) {
+        const target = event.target;
 
-    const deleteModalElement = document.getElementById('deleteModal');
-    const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
-    let deleteModal;
+        if (target.closest('.delete-btn')) {
+            this.reminderToDelete = target.closest('.reminder-item');
+            if (this.deleteModal) {
+                this.deleteModal.show();
+            }
+        }
 
-    if (deleteModalElement && typeof bootstrap !== 'undefined') {
-        deleteModal = new bootstrap.Modal(deleteModalElement);
+        if (target.closest('.edit-btn')) {
+            this.reminderToEdit = target.closest('.reminder-item');
+            this.openEditModal(this.reminderToEdit);
+        }
     }
 
-    if (remindersList) {
-        remindersList.addEventListener('click', function (event) {
-            const target = event.target;
+    updateEmptyState() {
+        const hasReminders = this.remindersList && 
+                           this.remindersList.querySelectorAll('.reminder-item').length > 0;
+        
+        if (this.emptyState) {
+            this.emptyState.style.display = hasReminders ? 'none' : 'block';
+        }
+        if (this.remindersList) {
+            this.remindersList.style.display = hasReminders ? 'block' : 'none';
+        }
+    }
 
-            if (target.closest('.delete-btn')) {
-                reminderToDelete = target.closest('.reminder-item');
-                if (deleteModal) {
-                    deleteModal.show();
+    // Utility function to convert messy date format to clean format
+    convertMessyDateToClean(messyDateString) {
+        try {
+            const dateObj = new Date(messyDateString);
+            if (isNaN(dateObj.getTime())) {
+                throw new Error('Invalid date');
+            }
+            return dateObj.toISOString().split('T')[0];
+        } catch (e) {
+            console.error('Failed to convert date:', messyDateString, e);
+            return new Date().toISOString().split('T')[0];
+        }
+    }
+
+    // Function to display reminders with clean format
+    displayReminder(reminderData) {
+        let cleanDate = reminderData.date;
+        
+        // If date is in messy format, convert it
+        if (reminderData.date && reminderData.date.includes('GMT+0800')) {
+            cleanDate = this.convertMessyDateToClean(reminderData.date);
+        }
+        
+        return {
+            title: reminderData.title,
+            datetime: `${cleanDate} at ${reminderData.time} - ${this.capitalizeFirst(reminderData.repeat)}`
+        };
+    }
+
+    capitalizeFirst(str) {
+        if (!str) return '';
+        return str.charAt(0).toUpperCase() + str.slice(1);
+    }
+
+    confirmDelete() {
+        if (!this.reminderToDelete) return;
+
+        const reminderId = this.reminderToDelete.getAttribute('data-id');
+        if (!reminderId) {
+            console.error('No reminder ID found');
+            return;
+        }
+
+        fetch(`/FitWell/reminders/${reminderId}`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.message) {
+                this.reminderToDelete.remove();
+                this.updateEmptyState();
+                if (this.deleteModal) {
+                    this.deleteModal.hide();
                 }
+                this.reminderToDelete = null;
+                this.showToast('Reminder deleted successfully!');
             }
-
-            if (target.closest('.edit-btn')) {
-                reminderToEdit = target.closest('.reminder-item');
-                openEditModal(reminderToEdit);
-            }
+        })
+        .catch(error => {
+            console.error('Error deleting reminder:', error);
+            this.showToast('Error deleting reminder. Please try again.', 'error');
         });
     }
 
-    if (confirmDeleteBtn) {
-        confirmDeleteBtn.addEventListener('click', function () {
-            if (reminderToDelete) {
-                const reminderId = reminderToDelete.getAttribute('data-id');
+    openEditModal(reminder) {
+        if (!reminder) return;
 
-                fetch(`/FitWell/reminders/${reminderId}`, {
-                    method: 'DELETE',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    }
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.message) {
-                        reminderToDelete.remove();
-                        updateEmptyState();
-                        if (deleteModal) {
-                            deleteModal.hide();
-                        }
-                        reminderToDelete = null;
-                        location.reload();
-                    }
-                })
-                .catch(error => {
-                    console.error('Error deleting reminder:', error);
-                    alert('Error deleting reminder. Please try again.');
-                });
-            }
-        });
+        const titleElement = reminder.querySelector('.reminder-text');
+        const datetimeElement = reminder.querySelector('.reminder-time');
+        const categoryElement = reminder.querySelector('.category-tag');
+
+        if (!titleElement || !datetimeElement) {
+            console.error('Required reminder elements not found');
+            return;
+        }
+
+        const title = titleElement.innerText;
+        const datetimeText = datetimeElement.innerText;
+        
+        console.log('Parsing datetime text:', datetimeText);
+        
+        const parsedData = this.parseDateTimeText(datetimeText);
+        
+        // Populate form
+        this.setFormValue('editTitle', title);
+        this.setFormValue('editTime', parsedData.timePart);
+        this.setFormValue('editRepeat', parsedData.repeatPart);
+        
+        if (categoryElement) {
+            this.setFormValue('editCategory', categoryElement.textContent.toLowerCase());
+        }
+
+        // Set date with validation
+        const editDateInput = document.getElementById("editDate");
+        if (editDateInput) {
+            const today = new Date().toISOString().split("T")[0];
+            editDateInput.setAttribute('min', today);
+            editDateInput.value = parsedData.datePart;
+        }
+
+        this.showEditModal();
     }
 
-    function openEditModal(reminder) {
-        const title = reminder.querySelector('.reminder-text').innerText;
-        const datetimeText = reminder.querySelector('.reminder-time').innerText;
+    parseDateTimeText(datetimeText) {
+        let datePart, timePart, repeatPart = 'none';
+        
+        try {
+            // Handle format: "Wed Jul 02 2025 08:00:00 GMT+0800 (Malaysia Time) at 01:05 - None"
+            if (datetimeText.includes('GMT+0800') && datetimeText.includes(' at ')) {
+                const parts = datetimeText.split(' at ');
+                const messyDateString = parts[0];
+                
+                datePart = this.convertMessyDateToClean(messyDateString);
+                
+                const timeAndRepeat = parts[1].split(' - ');
+                timePart = timeAndRepeat[0];
+                repeatPart = timeAndRepeat[1] ? timeAndRepeat[1].toLowerCase() : 'none';
+            }
+            // Handle clean format: "2025-07-02 at 01:05 - None"
+            else if (datetimeText.includes(' at ') && datetimeText.includes(' - ')) {
+                const parts = datetimeText.split(' at ');
+                datePart = parts[0];
+                
+                const timeAndRepeat = parts[1].split(' - ');
+                timePart = timeAndRepeat[0];
+                repeatPart = timeAndRepeat[1] ? timeAndRepeat[1].toLowerCase() : 'none';
+            }
+            else {
+                throw new Error('Unrecognized datetime format');
+            }
+        } catch (e) {
+            console.error('Error parsing datetime:', e);
+            // Fallback values
+            datePart = new Date().toISOString().split('T')[0];
+            timePart = '08:00';
+            repeatPart = 'none';
+        }
 
-        const parts = datetimeText.split(' at ');
-        const datePart = parts[0];
-        const timeAndRepeat = parts[1].split(' - ');
-        const timePart = timeAndRepeat[0];
-        const repeatPart = timeAndRepeat[1].toLowerCase();
+        console.log('Parsed:', { datePart, timePart, repeatPart });
+        return { datePart, timePart, repeatPart };
+    }
 
-        document.getElementById('editTitle').value = title;
-        document.getElementById('editDate').value = datePart;
-        document.getElementById('editTime').value = timePart;
-        document.getElementById('editRepeat').value = repeatPart;
+    setFormValue(elementId, value) {
+        const element = document.getElementById(elementId);
+        if (element) {
+            element.value = value;
+        }
+    }
 
-        const category = reminder.querySelector('.category-tag').textContent.toLowerCase();
-        document.getElementById('editCategory').value = category;
-
+    showEditModal() {
         const editModalElement = document.getElementById('editModal');
         if (editModalElement && typeof bootstrap !== 'undefined') {
             const editModal = new bootstrap.Modal(editModalElement);
@@ -160,81 +247,173 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-    const saveEditBtn = document.getElementById('saveEdit');
-    if (saveEditBtn) {
-        saveEditBtn.addEventListener('click', function () {
-            if (reminderToEdit) {
-                saveReminderEdits(reminderToEdit);
+    saveReminderEdits() {
+        if (!this.reminderToEdit) return;
+
+        const data = this.getFormData();
+        if (!this.validateFormData(data)) {
+            return;
+        }
+
+        console.log('Frontend sending:', data);
+
+        fetch(`/FitWell/reminders/${this.reminderToEdit.dataset.id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        })
+        .then(response => {
+            if (!response.ok) {
+                return response.json().then(errorData => {
+                    throw new Error(errorData.message || 'Server error');
+                });
             }
+            return response.json();
+        })
+        .then(({ message }) => {
+            if (message !== 'ok' && message !== 'Reminder updated successfully') {
+                throw new Error(message);
+            }
+
+            this.updateReminderUI(this.reminderToEdit, data);
+            this.hideEditModal();
+            this.reminderToEdit = null;
+            this.showToast('Reminder edited successfully!');
+        })
+        .catch(err => {
+            console.error('Error saving reminder:', err);
+            this.showToast(err.message || 'Error updating reminder', 'error');
         });
     }
 
-    function saveReminderEdits(reminder) {
-  const data = {
-    title:    document.getElementById('editTitle').value.trim(),
-    date:     document.getElementById('editDate').value,
-    time:     document.getElementById('editTime').value,
-    repeat:   document.getElementById('editRepeat').value,
-    category: document.getElementById('editCategory').value.trim().toLowerCase()
-  };
+    getFormData() {
+        return {
+            title: this.getFormValue('editTitle').trim(),
+            date: this.getFormValue('editDate'),
+            time: this.getFormValue('editTime'),
+            repeat: this.getFormValue('editRepeat'),
+            category: this.getFormValue('editCategory').trim().toLowerCase()
+        };
+    }
 
-  fetch(`/FitWell/reminders/${reminder.dataset.id}`, {
-    method:  'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body:    JSON.stringify(data)
-  })
-    .then(r => r.json())
-    .then(({ message }) => {
-      if (message !== 'ok' && message !== 'Reminder updated successfully') {
-        throw new Error(message);
-      }
+    getFormValue(elementId) {
+        const element = document.getElementById(elementId);
+        return element ? element.value : '';
+    }
 
-      /* ——— 1. Update title + time ——— */
-      reminder.querySelector('.reminder-text').textContent = data.title;
-      reminder.querySelector('.reminder-time').textContent =
-        `${data.date} at ${data.time} - ${data.repeat.charAt(0).toUpperCase() + data.repeat.slice(1)}`;
+    validateFormData(data) {
+        if (!data.title) {
+            this.showToast('Title is required', 'error');
+            return false;
+        }
+        if (!data.date) {
+            this.showToast('Date is required', 'error');
+            return false;
+        }
+        if (!data.time) {
+            this.showToast('Time is required', 'error');
+            return false;
+        }
+        return true;
+    }
 
-      /* ——— 2. Ensure the category pill exists & is styled ——— */
-      let tag = reminder.querySelector('.category-tag');
-      const formatted = data.category.charAt(0).toUpperCase() + data.category.slice(1);
-      const tagClass  = `category-tag category-${data.category}`;
+    updateReminderUI(reminder, data) {
+        // Update reminder text
+        const textElement = reminder.querySelector('.reminder-text');
+        if (textElement) {
+            textElement.textContent = data.title;
+        }
 
-      if (!tag) {
-        tag = document.createElement('span');
-        tag.className = tagClass;
-        tag.textContent = formatted;
+        // Update reminder time
+        const timeElement = reminder.querySelector('.reminder-time');
+        if (timeElement) {
+            timeElement.textContent = 
+                `${data.date} at ${data.time} - ${this.capitalizeFirst(data.repeat)}`;
+        }
 
-        // insert as first child of .reminder-details
-        const details = reminder.querySelector('.reminder-details');
-        details ? details.prepend(tag) : reminder.prepend(tag);
-      } else {
-        tag.textContent = formatted;
-        tag.className   = tagClass;
-      }
+        // Update category tag
+        let tag = reminder.querySelector('.category-tag');
+        const formatted = this.capitalizeFirst(data.category);
+        const tagClass = `category-tag category-${data.category}`;
 
-      /* ——— 3. Close modal + clear backdrop ——— */
-      const modalInst = bootstrap.Modal.getInstance(document.getElementById('editModal'));
-      modalInst?.hide();
-      document.querySelectorAll('.modal-backdrop').forEach(bd => bd.remove());
+        if (!tag) {
+            tag = document.createElement('span');
+            tag.className = tagClass;
+            tag.textContent = formatted;
+            const details = reminder.querySelector('.reminder-details');
+            if (details) {
+                details.prepend(tag);
+            } else {
+                reminder.prepend(tag);
+            }
+        } else {
+            tag.textContent = formatted;
+            tag.className = tagClass;
+        }
+    }
 
-      reminderToEdit = null;
-      showToast('Reminder edited successfully!');
-    })
-    .catch(err => {
-      console.error(err);
-      alert('Error updating reminder');
+    hideEditModal() {
+        const modalInst = bootstrap.Modal.getInstance(document.getElementById('editModal'));
+        if (modalInst) {
+            modalInst.hide();
+        }
+        // Clean up backdrop
+        document.querySelectorAll('.modal-backdrop').forEach(bd => bd.remove());
+    }
+
+    showToast(msg, type = 'success') {
+        const toastEl = document.getElementById('reminderToast');
+        const msgBox = document.getElementById('toastMessage');
+        
+        if (toastEl && msgBox) {
+            msgBox.textContent = msg;
+            
+            // Add color based on type
+            toastEl.className = toastEl.className.replace(/bg-\w+/, '');
+            if (type === 'error') {
+                toastEl.classList.add('bg-danger', 'text-white');
+            } else {
+                toastEl.classList.add('bg-success', 'text-white');
+            }
+            
+            new bootstrap.Toast(toastEl).show();
+        } else {
+            // Fallback to alert if toast elements not found
+            alert(msg);
+        }
+    }
+}
+
+// General UI interactions (kept separate from the reminder system)
+function handleUIInteractions() {
+    // Feature buttons
+    const buttons = document.querySelectorAll(".btn_feature");
+    buttons.forEach(button => {
+        button.addEventListener("click", function () {
+            const card = button.closest(".card");
+            const link = card.getAttribute("data-link");
+            if (link) {
+                window.location.href = link;
+            }
+        });
     });
-}
 
+    // Navigation active state
+    const currentPage = window.location.pathname;
+    const navLinks = document.querySelector("#nav_reminder a");
+    const isReminderPage = currentPage.includes("reminder");
+    if (isReminderPage && navLinks) {
+        navLinks.classList.add("active");
+    }
 
-/* helper (only once in the file) */
-function showToast(msg) {
-  const toastEl = document.getElementById('reminderToast');
-  const msgBox  = document.getElementById('toastMessage');
-  msgBox.textContent = msg;
-  new bootstrap.Toast(toastEl).show();
+    // Logout button
+    const btn_logout = document.querySelector("#btn_logout");
+    if (btn_logout) {
+        btn_logout.addEventListener("click", function(e) {
+            e.preventDefault();
+            if (confirm('Are you sure you want to logout?')) {
+                window.location.href = "/FitWell/logout";
+            }
+        });
+    }
 }
-}
-)
-;
-

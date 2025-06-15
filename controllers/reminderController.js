@@ -13,6 +13,7 @@ const getCurrentUserEmail = async (req) => {
   return user.email;
 };
 
+// Email transporter
 const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
@@ -21,19 +22,56 @@ const transporter = nodemailer.createTransport({
   }
 });
 
-exports.showCreateForm = (req, res) => {
-  if (!req.session.userId) return res.redirect('/FitWell/Login');
-  res.render('CreateReminder', { currentTab: 'create' });
+// Get today's date in YYYY-MM-DD
+const getTodayDate = () => {
+  const today = new Date();
+  const yyyy = today.getFullYear();
+  const mm = String(today.getMonth() + 1).padStart(2, '0');
+  const dd = String(today.getDate()).padStart(2, '0');
+  return `${yyyy}-${mm}-${dd}`;
 };
 
+// Render create reminder form
+exports.showCreateForm = (req, res) => {
+  if (!req.session.userId) return res.redirect('/FitWell/Login');
+
+  res.render('CreateReminder', {
+    currentTab: 'create',
+    today: getTodayDate(),
+    successMessage: null,
+    errorMessage: null
+  });
+};
+
+// Render reminder list page
 exports.showListPage = async (req, res) => {
   try {
     if (!req.session.userId) return res.redirect('/FitWell/Login');
+
     const reminders = await Reminder.find({ userId: req.session.userId });
 
+    const formattedReminders = reminders.map(r => {
+      const dateObj = new Date(r.date);
+
+      const yyyy = dateObj.getFullYear();
+      const mm = String(dateObj.getMonth() + 1).padStart(2, '0');
+      const dd = String(dateObj.getDate()).padStart(2, '0');
+      const formattedDate = `${yyyy}-${mm}-${dd}`;
+
+      const capitalizedRepeat =
+        r.repeat === 'none' ? 'Once' : r.repeat.charAt(0).toUpperCase() + r.repeat.slice(1);
+
+      return {
+        ...r.toObject(),
+        formattedDate,
+        capitalizedRepeat
+      };
+    });
+
     res.render('MyReminder', {
-      reminders,
+      reminders: formattedReminders,
       currentTab: 'my-reminders',
+      today: getTodayDate(),
       successMessage: req.session.successMessage || null,
     });
 
@@ -43,25 +81,42 @@ exports.showListPage = async (req, res) => {
     res.render('MyReminder', {
       reminders: [],
       currentTab: 'my-reminders',
+      today: getTodayDate(),
       successMessage: null,
       errorMessage: error.message,
     });
   }
 };
 
+// Create reminder
 exports.createReminder = async (req, res) => {
   try {
     if (!req.session.userId) return res.redirect('/FitWell/Login');
+
+    const { date } = req.body;
+    const userDate = new Date(date);
+    const currentDate = new Date();
+    userDate.setHours(0, 0, 0, 0);
+    currentDate.setHours(0, 0, 0, 0);
+
+    if (userDate < currentDate) {
+      return res.render('CreateReminder', {
+        currentTab: 'create',
+        today: getTodayDate(),
+        successMessage: null,
+        errorMessage: 'Date cannot be in the past.'
+      });
+    }
 
     const userEmail = await getCurrentUserEmail(req);
 
     const reminder = new Reminder({
       ...req.body,
+      date: new Date(`${req.body.date}T00:00:00.000Z`),
       userId: req.session.userId
     });
     await reminder.save();
 
-    // Send email if user has notifications enabled
     const user = await Users.findById(req.session.userId);
     const isNotificationEnabled = user?.notification?.[reminder.category];
 
@@ -87,16 +142,33 @@ exports.createReminder = async (req, res) => {
     console.error('Reminder creation error:', error);
     res.render('CreateReminder', {
       currentTab: 'create',
+      today: getTodayDate(),
       successMessage: null,
       errorMessage: error.message,
     });
   }
 };
 
+// Update reminder
 exports.updateReminder = async (req, res) => {
   try {
-    if (!req.session.userId) return res.status(401).json({ message: 'User not logged in' });
+    if (!req.session.userId) {
+      return res.status(401).json({ message: 'User not logged in' });
+    }
+
     const { id } = req.params;
+    const { date } = req.body;
+
+    const userDate = new Date(date);
+    const currentDate = new Date();
+    userDate.setHours(0, 0, 0, 0);
+    currentDate.setHours(0, 0, 0, 0);
+
+    if (userDate < currentDate) {
+      return res.status(400).json({ message: 'Date cannot be in the past' });
+    }
+
+    req.body.date = userDate;
 
     const reminder = await Reminder.findOneAndUpdate(
       { _id: id, userId: req.session.userId },
@@ -104,7 +176,9 @@ exports.updateReminder = async (req, res) => {
       { new: true }
     );
 
-    if (!reminder) return res.status(404).json({ message: 'Reminder not found' });
+    if (!reminder) {
+      return res.status(404).json({ message: 'Reminder not found' });
+    }
 
     res.json({ message: 'Reminder updated successfully', reminder });
   } catch (error) {
@@ -113,6 +187,7 @@ exports.updateReminder = async (req, res) => {
   }
 };
 
+// Delete reminder
 exports.deleteReminder = async (req, res) => {
   try {
     if (!req.session.userId) return res.status(401).json({ message: 'User not logged in' });
@@ -128,3 +203,4 @@ exports.deleteReminder = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
