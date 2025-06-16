@@ -9,6 +9,7 @@ const uri = "mongodb+srv://admin:OCC2G7FitWell@fitwell.ybm1ueb.mongodb.net/Fitwe
 mongoose.connect(uri)
 .then(()=> {
     console.log("Connected to MongoDB Atlas");
+
     app.listen(port, ()=>{
         console.log(`Server start listen to ${port}`);
     });
@@ -28,6 +29,7 @@ app.use(express.static(path.join(__dirname,'public')));
 
 // To parse form data in POST request body:
 app.use(express.urlencoded({ extended: true })); 
+app.use(express.json());
 
 //To parse JSON request body:
 app.use(express.json());
@@ -79,11 +81,12 @@ const MealLoggingRoute = require("./routes/MealLoggingRoute");
 const FavouriteMealRoute = require("./routes/FavouriteMealRoute");
 const CalculatorRoute = require("./routes/CalculatorRoute");
 const AuthStatusRoute = require("./routes/AuthStatusRoute");
+const reminderRoute = require("./routes/reminderRoute");
 // ...
 
 // Use routes
 app.use('/FitWell', LandingPageRoute);
-app.use('/FitWell', authRoute);
+app.use('/FitWell', authRoute); 
 app.use('/api/user', userRoute);
 app.use('/FitWell', requireLogin, ProfileRoute);
 app.use('/FitWell', requireLogin, FitnessRoute);
@@ -95,6 +98,7 @@ app.use('/FitWell', requireLogin, MealLoggingRoute);
 app.use('/FitWell', requireLogin, FavouriteMealRoute);
 app.use('/FitWell', requireLogin, CalculatorRoute);
 app.use('/FitWell', AuthStatusRoute);
+app.use('/FitWell',requireLogin, reminderRoute); 
 // ...
 
 

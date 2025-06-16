@@ -1,0 +1,84 @@
+<!-- Head -->
+<%- include("partials/head",{title: "FitWell - Create Reminder" , cssFile: "CreateReminder_style.css" }) %>
+
+<!-- Navigation bar -->
+<%- include("partials/nav") %>
+
+<!-- Tab navigation -->
+<div class="tab-container">
+  <a class="tab <%= (currentTab === 'create') ? 'active' : '' %>" href="/FitWell/reminders/create">Create Reminder</a>
+  <a class="tab <%= (currentTab === 'my-reminders') ? 'active' : '' %>" href="/FitWell/reminders/my-reminders">My Reminders</a>
+</div>
+
+
+<div id="create" class="tab-content active">
+  <div class="form-container">
+    <h2 class="form-title">Create New Reminder</h2>
+    <form action="/FitWell/reminders/create" method="POST" id="reminderForm">
+      <div class="form-group">
+        <label>Category</label>
+        <div class="category-container">
+          <div class="category-option">
+            <input type="radio" name="category" id="workout" value="workout" checked>
+            <label for="workout">
+              <div class="radio-circle"></div>
+              <img src="/images/fitness.png" alt="Workout Icon" class="mb-2">
+              <div class="category-name">Workout</div>
+            </label>
+          </div>
+          <div class="category-option">
+            <input type="radio" name="category" id="nutrition" value="nutrition">
+            <label for="nutrition">
+              <div class="radio-circle"></div>
+              <img src="/images/apple.png" alt="Nutrition Icon" class="mb-2">
+              <div class="category-name">Nutrition</div>
+            </label>
+          </div>
+          <div class="category-option">
+            <input type="radio" name="category" id="water" value="water">
+            <label for="water">
+              <div class="radio-circle"></div>
+              <img src="/images/bottle.png" alt="Water Icon" class="mb-2">
+              <div class="category-name">Water</div>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="title">Title</label>
+        <input type="text" id="title" name="title" class="form-control" placeholder="e.g. Have Lunch" required>
+      </div>
+
+      <div class="form-group">
+        <label for="date">Date</label>
+        <div class="date-container">
+           <input type="date" id="date" name="date" class="form-control" min="<%=today%>" required>
+      </div>
+
+      <div class="form-group">
+        <label for="time">Time</label>
+        <div class="time-container">
+          <input type="text" id="time" name="time" class="form-control" placeholder="--:-- --" onfocus="(this.type='time')" required>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="repeat">Repeat</label>
+        <div class="select-container">
+          <select id="repeat" name="repeat" class="form-control" required>
+            <option value="none" selected>Do not repeat</option>
+            <option value="daily">Daily</option>
+            <option value="weekly">Weekly</option>
+            <option value="monthly">Monthly</option>
+          </select>
+        </div>
+      </div>
+
+      <button type="submit" class="btn-save">Save Reminder</button>
+    </form>
+  </div>
+</div>
+
+<!-- Footer -->
+<%- include("partials/footer", {scriptFile:"Reminder_script.js"}) %>

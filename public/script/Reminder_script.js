@@ -1,199 +1,379 @@
 document.addEventListener('DOMContentLoaded', function () {
-    // User login and logout logic
-    const isLoggedIn = localStorage.getItem("loggedIn");
-
-    if (isLoggedIn === "true") {
-        handleLoggedInState();
-    }
-
-    // Handle logged-in state UI changes
-    function handleLoggedInState() {
-        document.body.classList.add("logged-in");
-
-        const showIds = [
-            "nav_tracker", "nav_nutrition", "nav_progress", "nav_reminder", "nav_profile",
-            "quicklink_tracker", "quicklink_progress", "quicklink_nutrition", "quicklink_reminder"
-        ];
-        showIds.forEach(id => {
-            const el = document.getElementById(id);
-            if (el) el.classList.remove("d-none");
-        });
-
-        const btn_login = document.querySelector("#btn_login");
-        const btn_signup = document.querySelector("#btn_signup");
-        const btn_get_started = document.querySelector("#btn_get_started");
-
-        if (btn_login) btn_login.classList.add("d-none");
-        if (btn_signup) btn_signup.classList.add("d-none");
-        if (btn_get_started) btn_get_started.classList.add("d-none");
-
-        const buttons = document.querySelectorAll(".btn_feature");
-        buttons.forEach(button => {
-            button.addEventListener("click", function () {
-                const card = button.closest(".card");
-                const link = card.getAttribute("data-link");
-                if (link) {
-                    window.location.href = link;
-                }
-            });
-        });
-    }
-
-    // Highlight the active page in the navigation
-    const currentPage = window.location.pathname.split("/").pop();
-    const navLinks = document.querySelector("#nav_reminder a");
-
-    const isReminderPage = currentPage === "CreateReminder.html" || currentPage === "MyReminder.html";
-    console.log(currentPage)
-    if (isReminderPage && navLinks) {
-        navLinks.classList.add("active");
-    }
-
-    // Logout functionality
-    const btn_logout = document.querySelector("#btn_logout");
-    if (btn_logout) {
-        btn_logout.addEventListener("click", logout);
-    }
-
-    function logout() {
-        const favorites = localStorage.getItem('mealFavourites');
-        localStorage.clear();
-        if (favorites) {
-            localStorage.setItem('mealFavourites', favorites);
-        }
-        setTimeout(() => {
-            window.location.href = "Login.html";
-        }, 500);
-    }
-    
-    // DOM elements for reminders list and empty state
-    const remindersList = document.querySelector('#reminder-list');
-    const emptyState = document.querySelector('#empty-state');
-    let reminderToDelete = null;
-    let reminderToEdit = null;
-
-    // Update the display of the empty state based on the reminders list
-    function updateEmptyState() {
-        const hasReminders = remindersList.querySelectorAll('.reminder-item').length > 0;
-        emptyState.style.display = hasReminders ? 'none' : 'block';
-        remindersList.style.display = hasReminders ? 'block' : 'none';
-    }
-
-    updateEmptyState();
-
-    // Delete modal
-    const deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
-    const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
-
-    // Handle reminder interactions (edit, delete)
-    remindersList.addEventListener('click', function (event) {
-        const target = event.target;
-
-        // Handle delete
-        if (target.closest('.delete-btn')) {
-            reminderToDelete = target.closest('.reminder-item');
-            deleteModal.show();
-        }
-
-        // Handle edit
-        if (target.closest('.edit-btn')) {
-            reminderToEdit = target.closest('.reminder-item');
-            openEditModal(reminderToEdit);
-        }
-    });
-
-    // Confirm delete reminder
-    confirmDeleteBtn.addEventListener('click', function () {
-        if (reminderToDelete) {
-            reminderToDelete.remove();
-            updateEmptyState();
-            deleteModal.hide();
-            reminderToDelete = null;
-        }
-    });
-
-    // Open edit modal and populate with current reminder data
-    function openEditModal(reminder) {
-        const title = reminder.querySelector('.reminder-text').innerText;
-        const datetimeText = reminder.querySelector('.reminder-time').innerText;
-        const repeatText = datetimeText.split('-')[1].trim();
-        
-        // Parse the date string from the displayed text
-        const [datePart, timePart] = datetimeText.split('at').map(part => part.trim());
-        const timeValue = timePart.split('-')[0].trim();
-        
-        // Parse the date using the displayed format
-        const dateObj = new Date(datePart);
-        
-        // Format the date for the input field in YYYY-MM-DD format
-        // Use local date to prevent timezone issues
-        const year = dateObj.getFullYear();
-        const month = String(dateObj.getMonth() + 1).padStart(2, '0');
-        const day = String(dateObj.getDate()).padStart(2, '0');
-        const formattedDate = `${year}-${month}-${day}`;
-        
-        // Extract time and convert to 24-hour format
-        let [timeString, ampm] = timeValue.split(' ');
-        let [hours, minutes] = timeString.split(':').map(Number);
-        if (ampm === 'PM' && hours < 12) hours += 12;
-        if (ampm === 'AM' && hours === 12) hours = 0;
-        const formattedTime = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
-
-        // Populate modal with data
-        document.getElementById('editTitle').value = title;
-        document.getElementById('editDate').value = formattedDate;
-        document.getElementById('editTime').value = formattedTime;
-        document.getElementById('editRepeat').value = repeatText;
-
-        // Populate category (without allowing editing)
-        const category = reminder.querySelector('.category-tag').textContent;
-        const categorySelect = document.getElementById('editCategory');
-        categorySelect.value = category;  // Set category value
-        // categorySelect.disabled = true;  // Disable category dropdown
-
-        const editModal = new bootstrap.Modal(document.getElementById('editModal'));
-        editModal.show();
-    }
-
-    // Save edited reminder
-    document.getElementById('saveEdit').addEventListener('click', function () {
-        if (reminderToEdit) {
-            saveReminderEdits(reminderToEdit);
-        }
-    });
-
-    // Function to save the reminder edits
-    function saveReminderEdits(reminder) {
-        const title = document.getElementById('editTitle').value;
-        const date = document.getElementById('editDate').value;
-        const time = document.getElementById('editTime').value;
-        const repeat = document.getElementById('editRepeat').value;
-
-        // Create a date object preserving the input date
-        const [year, month, day] = date.split('-').map(Number);
-        const [hours, minutes] = time.split(':').map(Number);
-        
-        // Create date object using local components to prevent timezone issues
-        const dateObj = new Date(year, month - 1, day, hours, minutes);
-        
-        // Format the date in a locale-friendly way
-        const formattedDate = dateObj.toLocaleDateString('en-US', {
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric'
-        });
-        
-        // Format the time
-        const formattedTime = dateObj.toLocaleTimeString('en-US', { 
-            hour: 'numeric', 
-            minute: '2-digit' 
-        });
-
-        // Update reminder display
-        reminder.querySelector('.reminder-text').textContent = title;
-        reminder.querySelector('.reminder-time').textContent = `${formattedDate} at ${formattedTime} - ${repeat.charAt(0).toUpperCase() + repeat.slice(1)}`;
-
-        bootstrap.Modal.getInstance(document.getElementById('editModal')).hide();
-        reminderToEdit = null;
-    }
+    const reminderSystem = new ReminderManager();
+    reminderSystem.init();
+    handleUIInteractions();
 });
+
+class ReminderManager {
+    constructor() {
+        this.remindersList = document.querySelector('#reminder-list');
+        this.emptyState = document.querySelector('#empty-state');
+        this.reminderToDelete = null;
+        this.reminderToEdit = null;
+        this.deleteModal = null;
+        this.isSorting = false;
+    }
+
+    init() {
+        this.setupDeleteModal();
+        this.setupEventListeners();
+        this.sortReminders();
+        this.updateEmptyState();
+    }
+
+    setupDeleteModal() {
+        const deleteModalElement = document.getElementById('deleteModal');
+        if (deleteModalElement && typeof bootstrap !== 'undefined') {
+            this.deleteModal = new bootstrap.Modal(deleteModalElement);
+        }
+    }
+
+    setupEventListeners() {
+        if (this.remindersList) {
+            this.remindersList.addEventListener('click', (event) => {
+                this.handleReminderClick(event);
+            });
+        }
+
+        document.getElementById('confirmDeleteBtn')?.addEventListener('click', () => this.confirmDelete());
+        document.getElementById('saveEdit')?.addEventListener('click', () => this.saveReminderEdits());
+    }
+
+    async sortReminders() {
+        if (!this.remindersList || this.isSorting) return;
+        
+        this.isSorting = true;
+        const now = new Date();
+        const reminderItems = Array.from(this.remindersList.querySelectorAll('.reminder-item'));
+
+        // Add sorting state classes
+        reminderItems.forEach(item => {
+            item.classList.add('sorting');
+            item.dataset.originalPos = item.getBoundingClientRect().top;
+        });
+
+        // Sort logic - nearest dates first
+        reminderItems.sort((a, b) => {
+            const aDateTime = this.getDateTimeFromElement(a);
+            const bDateTime = this.getDateTimeFromElement(b);
+            
+            // Handle invalid dates
+            if (isNaN(aDateTime.getTime())) return 1;
+            if (isNaN(bDateTime.getTime())) return -1;
+            
+            // Future dates before past dates
+            if (aDateTime < now && bDateTime >= now) return 1;
+            if (bDateTime < now && aDateTime >= now) return -1;
+            
+            // Sort by date/time
+            return aDateTime - bDateTime;
+        });
+
+        // Animate the sorting
+        for (const item of reminderItems) {
+            this.remindersList.appendChild(item);
+            const newPos = item.getBoundingClientRect().top;
+            const originalPos = parseFloat(item.dataset.originalPos);
+            
+            item.classList.remove('sorting-up', 'sorting-down');
+            item.classList.add(newPos < originalPos ? 'sorting-up' : 'sorting-down');
+            
+            await new Promise(r => setTimeout(r, 20));
+        }
+
+        // Clean up classes
+        setTimeout(() => {
+            reminderItems.forEach(item => {
+                item.classList.remove('sorting', 'sorting-up', 'sorting-down');
+                delete item.dataset.originalPos;
+            });
+            this.isSorting = false;
+            this.updateReminderClasses();
+        }, 300);
+    }
+
+    getDateTimeFromElement(element) {
+        try {
+            const timeText = element.querySelector('.reminder-time')?.textContent;
+            if (!timeText?.includes(' at ')) throw new Error('Invalid format');
+            
+            const [datePart, rest] = timeText.split(' at ');
+            const [timePart] = rest.split(' - ');
+            const [year, month, day] = datePart.split('-');
+            const [hours, minutes] = timePart.split(':');
+            
+            return new Date(year, month-1, day, hours, minutes);
+        } catch (e) {
+            console.error('Error parsing date:', e);
+            return new Date('9999-12-31'); // Invalid date
+        }
+    }
+
+    updateReminderClasses() {
+        const now = new Date();
+        document.querySelectorAll('.reminder-item').forEach(item => {
+            const dateTime = this.getDateTimeFromElement(item);
+            item.classList.toggle('past', dateTime < now);
+            item.classList.toggle('invalid', isNaN(dateTime.getTime()));
+        });
+    }
+
+    handleReminderClick(event) {
+        const target = event.target;
+        if (target.closest('.delete-btn')) {
+            this.reminderToDelete = target.closest('.reminder-item');
+            this.deleteModal?.show();
+        }
+        if (target.closest('.edit-btn')) {
+            this.reminderToEdit = target.closest('.reminder-item');
+            this.openEditModal(this.reminderToEdit);
+        }
+    }
+
+    updateEmptyState() {
+        const hasReminders = this.remindersList?.querySelectorAll('.reminder-item').length > 0;
+        if (this.emptyState) this.emptyState.style.display = hasReminders ? 'none' : 'block';
+        if (this.remindersList) this.remindersList.style.display = hasReminders ? 'block' : 'none';
+    }
+
+    confirmDelete() {
+        if (!this.reminderToDelete) return;
+
+        const reminderId = this.reminderToDelete.dataset.id;
+        if (!reminderId) return;
+
+        const confirmBtn = document.getElementById('confirmDeleteBtn');
+        confirmBtn.disabled = true;
+        confirmBtn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Deleting...';
+
+        fetch(`/FitWell/reminders/${reminderId}`, {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' }
+        })
+        .then(response => {
+            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+            return response.json();
+        })
+        .then(data => {
+            if (data.message) {
+                this.reminderToDelete.remove();
+                this.sortReminders();
+                this.updateEmptyState();
+                this.deleteModal?.hide();
+                this.showToast('Reminder deleted successfully!');
+            }
+        })
+        .catch(error => {
+            this.showToast('Error deleting reminder. Please try again.', 'error');
+            console.error('Delete error:', error);
+        })
+        .finally(() => {
+            confirmBtn.disabled = false;
+            confirmBtn.textContent = 'Delete';
+            this.reminderToDelete = null;
+        });
+    }
+
+    openEditModal(reminder) {
+        if (!reminder) return;
+
+        const title = reminder.querySelector('.reminder-text')?.textContent || '';
+        const datetimeText = reminder.querySelector('.reminder-time')?.textContent || '';
+        const category = reminder.querySelector('.category-tag')?.textContent.toLowerCase() || 'workout';
+
+        const { datePart, timePart, repeatPart } = this.parseDateTimeText(datetimeText);
+        
+        this.setFormValue('editTitle', title);
+        this.setFormValue('editTime', timePart);
+        this.setFormValue('editRepeat', repeatPart);
+        this.setFormValue('editCategory', category);
+
+        const editDateInput = document.getElementById("editDate");
+        if (editDateInput) {
+            const today = new Date().toISOString().split("T")[0];
+            editDateInput.setAttribute('min', today);
+            editDateInput.value = datePart;
+        }
+
+        this.showEditModal();
+    }
+
+    saveReminderEdits() {
+        if (!this.reminderToEdit) return;
+
+        const data = this.getFormData();
+        if (!this.validateFormData(data)) return;
+
+        const saveBtn = document.getElementById('saveEdit');
+        const originalBtnText = saveBtn.innerHTML;
+        saveBtn.disabled = true;
+        saveBtn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Saving...';
+
+        fetch(`/FitWell/reminders/${this.reminderToEdit.dataset.id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        })
+        .then(response => {
+            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+            return response.json();
+        })
+        .then(({ message }) => {
+            if (!['ok', 'Reminder updated successfully'].includes(message)) {
+                throw new Error(message);
+            }
+
+            this.updateReminderUI(this.reminderToEdit, data);
+            this.sortReminders();
+            this.hideEditModal();
+            this.showToast('Reminder updated successfully!');
+        })
+        .catch(error => {
+            console.error('Update error:', error);
+            this.showToast(error.message || 'Error updating reminder', 'error');
+        })
+        .finally(() => {
+            saveBtn.disabled = false;
+            saveBtn.innerHTML = originalBtnText;
+            this.reminderToEdit = null;
+        });
+    }
+
+    updateReminderUI(reminder, data) {
+        // Update text content
+        const textElement = reminder.querySelector('.reminder-text');
+        if (textElement) textElement.textContent = data.title;
+
+        // Update time display
+        const timeElement = reminder.querySelector('.reminder-time');
+        if (timeElement) {
+            timeElement.textContent = `${data.date} at ${data.time} - ${this.capitalizeFirst(data.repeat)}`;
+        }
+
+        // Update category
+        let tag = reminder.querySelector('.category-tag');
+        const tagClass = `category-tag category-${data.category}`;
+        if (!tag) {
+            tag = document.createElement('span');
+            tag.className = tagClass;
+            tag.textContent = this.capitalizeFirst(data.category);
+            reminder.querySelector('.reminder-details')?.prepend(tag);
+        } else {
+            tag.className = tagClass;
+            tag.textContent = this.capitalizeFirst(data.category);
+        }
+
+        // Update data attributes for sorting
+        reminder.dataset.date = data.date;
+        reminder.dataset.time = data.time;
+    }
+
+    // Helper methods
+    parseDateTimeText(text) {
+        let datePart, timePart, repeatPart = 'none';
+        try {
+            if (text.includes(' at ')) {
+                const [date, rest] = text.split(' at ');
+                const [time, repeat] = rest.split(' - ');
+                return {
+                    datePart: date,
+                    timePart: time,
+                    repeatPart: repeat?.toLowerCase() || 'none'
+                };
+            }
+            throw new Error('Invalid format');
+        } catch (e) {
+            console.error('Parse error:', e);
+            return {
+                datePart: new Date().toISOString().split('T')[0],
+                timePart: '08:00',
+                repeatPart: 'none'
+            };
+        }
+    }
+
+    setFormValue(id, value) {
+        const element = document.getElementById(id);
+        if (element) element.value = value;
+    }
+
+    getFormValue(id) {
+        return document.getElementById(id)?.value || '';
+    }
+
+    getFormData() {
+        return {
+            title: this.getFormValue('editTitle').trim(),
+            date: this.getFormValue('editDate'),
+            time: this.getFormValue('editTime'),
+            repeat: this.getFormValue('editRepeat'),
+            category: this.getFormValue('editCategory').trim().toLowerCase()
+        };
+    }
+
+    validateFormData(data) {
+        if (!data.title) {
+            this.showToast('Title is required', 'error');
+            return false;
+        }
+        if (!data.date) {
+            this.showToast('Date is required', 'error');
+            return false;
+        }
+        if (!data.time) {
+            this.showToast('Time is required', 'error');
+            return false;
+        }
+        return true;
+    }
+
+    capitalizeFirst(str) {
+        return str ? str.charAt(0).toUpperCase() + str.slice(1) : '';
+    }
+
+    showEditModal() {
+        const modal = new bootstrap.Modal(document.getElementById('editModal'));
+        modal.show();
+    }
+
+    hideEditModal() {
+        const modal = bootstrap.Modal.getInstance(document.getElementById('editModal'));
+        modal?.hide();
+        document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
+    }
+
+    showToast(message, type = 'success') {
+        const toastEl = document.getElementById('reminderToast');
+        if (!toastEl) return alert(message);
+        
+        const msgBox = document.getElementById('toastMessage');
+        msgBox.textContent = message;
+        
+        toastEl.className = `toast align-items-center text-white bg-${type === 'error' ? 'danger' : 'success'}`;
+        new bootstrap.Toast(toastEl).show();
+    }
+}
+
+// General UI handlers
+function handleUIInteractions() {
+    // Feature buttons
+    document.querySelectorAll(".btn_feature").forEach(btn => {
+        btn.addEventListener("click", function() {
+            const link = this.closest(".card")?.getAttribute("data-link");
+            if (link) window.location.href = link;
+        });
+    });
+
+    // Navigation active state
+    if (window.location.pathname.includes("reminder")) {
+        document.querySelector("#nav_reminder a")?.classList.add("active");
+    }
+
+    // Logout button
+    document.querySelector("#btn_logout")?.addEventListener("click", function(e) {
+        e.preventDefault();
+        if (confirm('Are you sure you want to logout?')) {
+            window.location.href = "/FitWell/logout";
+        }
+    });
+}
