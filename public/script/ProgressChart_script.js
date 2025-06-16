@@ -1,60 +1,13 @@
 document.addEventListener("DOMContentLoaded", function () {
-    const nav = document.querySelector(".navbar");
-    const features = document.querySelectorAll(".card");
-    const isLoggedIn = localStorage.getItem("loggedIn");
-
-    // Check if user is logged in
-    if (isLoggedIn === "true") {
-        document.body.classList.add("logged-in");
-
-        // Show the hidden nav and quicklink items
-        const showIds = [
-            "nav_tracker", "nav_nutrition", "nav_progress", "nav_reminder", "nav_profile",
-            "quicklink_tracker", "quicklink_progress", "quicklink_nutrition", "quicklink_reminder"
-        ];
-        showIds.forEach(id => {
-            const el = document.getElementById(id);
-            if (el) el.classList.remove("d-none");
-        });
-
-        // Hide login/signup/get-started buttons
-        const btn_login = document.querySelector("#btn_login");
-        const btn_signup = document.querySelector("#btn_signup");
-        const btn_get_started = document.querySelector("#btn_get_started");
-
-        if (btn_login) btn_login.classList.add("d-none");
-        if (btn_signup) btn_signup.classList.add("d-none");
-        if (btn_get_started) btn_get_started.classList.add("d-none");
-
-        // Card feature redirection
-        const buttons = document.querySelectorAll(".btn_feature");
-        buttons.forEach(button => {
-            button.addEventListener("click", function () {
-                const card = button.closest(".card");
-                const link = card.getAttribute("data-link");
-                if (link) {
-                    console.log("Redirecting to:", link);
-                    window.location.href = link;
-                }
-            });
-        });
-    }
-
     // Automatically highlight the correct nav link based on current page
     const currentPage = window.location.pathname.split("/").pop();
     const navLinks = document.querySelectorAll(".nav-link");
 
     navLinks.forEach(link => {
         const href = link.getAttribute("href");
-        // Check if the href contains the current page name or ends with it
-        if (href && (href.includes(currentPage) || href.endsWith(currentPage) || 
-            (currentPage === "ProgressChart.html" && href.includes("ProgressChart.html")))) {
+
+        if (href && href.includes(currentPage)) {
             link.classList.add("active");
-            
-            // Add green highlight for Progress Chart
-            if (currentPage === "ProgressChart.html") {
-                link.classList.add("active-green");
-            }
         }
     });
 
@@ -63,16 +16,6 @@ document.addEventListener("DOMContentLoaded", function () {
     if (streakRing) {
         streakRing.setAttribute("viewBox", "0 0 200 200");
         streakRing.setAttribute("preserveAspectRatio", "xMidYMid meet");
-    }
-
-    // Streak Progress Circle
-    const currentStreak = 20;
-    const goal = 31;
-
-    const circle = document.querySelector(".streak-progress");
-    if (circle) {
-        const offset = 565.5 - (565.5 * currentStreak) / goal; // 565.5 = 2 * π * 90 (the circle radius)
-        circle.style.strokeDashoffset = offset;
     }
 
     // Initialize streak ring
@@ -85,7 +28,25 @@ document.addEventListener("DOMContentLoaded", function () {
     initializeWorkoutChart();
 
     // Initialize calories burned bar chart
-    initializeCaloriesChart();
+    // Initialize with monthly view by default
+    initializeCaloriesChart('monthly');
+    
+    // Add event listener for view selector dropdown
+    const viewSelector = document.getElementById('viewSelector');
+    if (viewSelector) {
+        viewSelector.addEventListener('change', function(e) {
+            const selectedView = e.target.value;
+            initializeCaloriesChart(selectedView);
+            
+            // Optional: Add smooth transition effect
+            const chartContainer = document.querySelector('#caloriesBarChart').parentElement;
+            chartContainer.style.opacity = '0.7';
+            setTimeout(() => {
+                chartContainer.style.opacity = '1';
+            }, 100);
+        });
+    }
+
 
     // Initialize the BMI indicator
     updateBMIIndicator(parseFloat(document.getElementById('bmi-value').textContent));
@@ -96,8 +57,12 @@ document.addEventListener("DOMContentLoaded", function () {
 
 // Function to initialize and update streak ring
 function initializeStreakRing() {
-    const currentStreak = 20;
+    // Get streak value from DOM (from EJS template)
+    const streakElement = document.getElementById("noDays");
+    const currentStreak = streakElement ? parseInt(streakElement.textContent) || 0 : 0;
     const goal = 31;
+    
+    console.log("Initializing streak ring with streak:", currentStreak, "Goal:", goal);
     
     const svgRing = document.querySelector(".streak-ring");
     const progress = document.querySelector(".streak-progress");
@@ -109,16 +74,27 @@ function initializeStreakRing() {
         
         // Calculate circumference - 2πr where r=90
         const radius = 90;
-        const circumference = 2 * Math.PI * radius;
+        const circumference = 2 * Math.PI * radius; // ≈ 565.5
         
-        // Calculate progress offset
-        const offset = circumference - (circumference * currentStreak / goal);
+        // Calculate progress as percentage
+        const progressPercentage = Math.min(currentStreak / goal, 1); // Cap at 100%
         
-        // Set attributes
-        progress.setAttribute("stroke-dasharray", circumference);
-        progress.setAttribute("stroke-dashoffset", offset);
+        // Calculate offset (start from top, go clockwise)
+        const offset = circumference - (circumference * progressPercentage);
         
-        console.log("Streak ring initialized. Circumference:", circumference, "Offset:", offset);
+        // Set stroke-dasharray and stroke-dashoffset
+        progress.style.strokeDasharray = circumference;
+        progress.style.strokeDashoffset = offset;
+        
+        console.log("Streak ring updated:", {
+            currentStreak,
+            goal,
+            progressPercentage: (progressPercentage * 100).toFixed(1) + "%",
+            circumference: circumference.toFixed(1),
+            offset: offset.toFixed(1)
+        });
+    } else {
+        console.error("Streak ring elements not found:", { svgRing: !!svgRing, progress: !!progress });
     }
 }
 
@@ -154,64 +130,124 @@ setTimeout(handleResponsiveLayout, 100);
 
 //Funtion to initialize the duration bar chart
 function initializeDurationChart() {
-    const durationCtx = document.getElementById('durationBarChart').getContext('2d');
-
-// Sample workout duration data for a week
-const workoutDurations = [120, 200, 150, 80, 70, 110, 130]; // in minutes
-const daysOfWeek = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-
-new Chart(durationCtx, {
-  type: 'bar',
-  data: {
-    labels: daysOfWeek,
-    datasets: [{
-      label: 'Workout Duration (mins)',
-      data: workoutDurations,
-      backgroundColor: '#85A947',
-      borderRadius: 8,
-    }]
-  },
-  options: {
-    responsive: true,
-    maintainAspectRatio: false,
-    scales: {
-      y: {
-        beginAtZero: true,
-        title: {
-          display: true,
-          text: 'Minutes'
+  const durationCtx = document.getElementById('durationBarChart').getContext('2d');
+  const canvas = document.getElementById('durationBarChart');
+  
+  // Get last 7 days data from canvas data attributes
+  const last7DaysLabels = JSON.parse(canvas.dataset.last7daysLabels || '["Day 1","Day 2","Day 3","Day 4","Day 5","Day 6","Day 7"]');
+  const last7DaysDurations = JSON.parse(canvas.dataset.last7daysDurations || '[0,0,0,0,0,0,0]');
+  
+  new Chart(durationCtx, {
+    type: 'bar',
+    data: {
+      labels: last7DaysLabels,
+      datasets: [{
+        label: 'Workout Duration (mins)',
+        data: last7DaysDurations,
+        backgroundColor: '#85A947',
+        borderRadius: 8,
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      scales: {
+        y: {
+          beginAtZero: true,
+          title: {
+            display: true,
+            text: 'Minutes'
+          }
+        },
+        x: {
+          ticks: {
+            maxRotation: 45,
+            minRotation: 0
+          }
+        }
+      },
+      plugins: {
+        legend: {
+          display: false
+        },
+        tooltip: {
+          callbacks: {
+            title: function(context) {
+              return context[0].label;
+            },
+            label: function(context) {
+              return `Duration: ${context.parsed.y} minutes`;
+            }
+          }
         }
       }
-    },
-    plugins: {
-      legend: {
-        display: false
-      }
     }
-  }
-});
-
+  });
 }
+
 // Function to initialize the calories burned bar chart
-function initializeCaloriesChart() {
-    const dataValues = [1100, 500, 1300, 900, 600, 1000, 1200, 2100, 950, 1800, 800, 870];
+let caloriesChart = null;
+const weeklyLabels = [];
+const today = new Date();
+for (let i = 6; i >= 0; i--) {
+  const date = new Date(today);
+  date.setDate(today.getDate() - i);
+  const dayLabel = date.toLocaleDateString("en-US", {
+    weekday: "short",
+    month: "numeric",
+    day: "numeric",
+  });
+  weeklyLabels.push(dayLabel);
+}
+
+// Chart configuration for different views
+const chartConfig = {
+    monthly: {
+        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+        legendLabel: 'Best Month',
+        xAxisTitle: 'Month'
+    },
+    weekly: {
+        labels: weeklyLabels,
+        legendLabel: 'Best Day',
+        xAxisTitle: 'Day of Week'
+    }
+};
+
+function initializeCaloriesChart(viewType = 'monthly') {
+    const canvas = document.getElementById('caloriesBarChart');
+    if (!canvas) {
+        console.error('Canvas element not found');
+        return;
+    }
+
+    // Get data from canvas data attributes
+    const monthlyCalories = JSON.parse(canvas.getAttribute('data-monthly-calories') || '[]');
+    const weeklyCalories = JSON.parse(canvas.getAttribute('data-weekly-calories') || '[]');
+    
+    // Select data based on view type
+    const dataValues = viewType === 'monthly' ? monthlyCalories : weeklyCalories;
+    const config = chartConfig[viewType];
+    const labels = config.labels;
     const maxValue = Math.max(...dataValues);
     const highlightColor = '#3E7B27';  // Darker green
     const defaultColor = '#85A947';    // Regular green
 
-    // Find index of the highest value
-    const maxIndex = dataValues.indexOf(maxValue);
+    // Destroy existing chart if it exists
+    if (caloriesChart) {
+        caloriesChart.destroy();
+    }
     
-    var ctx = document.getElementById('caloriesBarChart').getContext('2d');
-    var myBarChart = new Chart(ctx, {
-        type: 'bar', // Use 'bar' for vertical bar chart
+    const ctx = canvas.getContext('2d');
+    caloriesChart = new Chart(ctx, {
+        type: 'bar',
         data: {
-            labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'], // The categories for the bars
+            labels: labels,
             datasets: [
                 {
                     label: 'Calories Burned',
                     data: dataValues.map((value, index) => 
-                        value === maxValue ? null : value
+                        value === maxValue && value > 0 ? null : value
                     ),
                     backgroundColor: defaultColor,
                     borderRadius: 8,
@@ -219,9 +255,9 @@ function initializeCaloriesChart() {
                     stack: 'Stack 0',
                 },
                 {
-                    label: 'Best Month',
+                    label: config.legendLabel,
                     data: dataValues.map((value, index) => 
-                        value === maxValue ? value : null
+                        value === maxValue && value > 0 ? value : null
                     ),
                     backgroundColor: highlightColor,
                     borderRadius: 8,
@@ -235,7 +271,7 @@ function initializeCaloriesChart() {
             maintainAspectRatio: false,
             scales: {
                 y: {
-                    beginAtZero: true, // Ensures the Y-axis starts at 0
+                    beginAtZero: true,
                     title: {
                         display: true,
                         text: 'Calories Burned'
@@ -244,7 +280,7 @@ function initializeCaloriesChart() {
                 x: {
                     title: {
                         display: true,
-                        text: 'Month'
+                        text: config.xAxisTitle
                     }
                 }
             },
@@ -264,16 +300,17 @@ function initializeCaloriesChart() {
                 tooltip: {
                     callbacks: {
                         title: function(context) {
-                            const monthIndex = context[0].dataIndex;
-                            return ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][monthIndex];
+                            const index = context[0].dataIndex;
+                            return labels[index];
                         },
                         label: function(context) {
-                            const value = dataValues[context.dataIndex]; // Get the original value regardless of dataset
+                            const value = dataValues[context.dataIndex];
                             return `Calories burned: ${value}`;
                         },
                         footer: function(context) {
                             const value = dataValues[context[0].dataIndex];
-                            return value === maxValue ? 'This is the month with highest calories burned!' : '';
+                            const period = viewType === 'monthly' ? 'month' : 'day';
+                            return value === maxValue && value > 0 ? `This is the ${period} with highest calories burned!` : '';
                         }
                     }
                 }
@@ -282,17 +319,76 @@ function initializeCaloriesChart() {
     });
 }
 
+
+// Function to update chart data
+function updateCaloriesChart(newMonthlyData, newWeeklyData) {
+    const canvas = document.getElementById('caloriesBarChart');
+    if (canvas) {
+        canvas.setAttribute('data-monthly-calories', JSON.stringify(newMonthlyData));
+        canvas.setAttribute('data-weekly-calories', JSON.stringify(newWeeklyData));
+        
+        // Refresh current view
+        const currentView = document.getElementById('viewSelector').value;
+        initializeCaloriesChart(currentView);
+    }
+}
+
 // Function to initialize the workout type pie chart
 function initializeWorkoutChart() {
     const ctx = document.getElementById('workTypesPieChart');
     
     if (ctx) {
-        // Sample workout data - replace with actual data from your database
-        const workoutTypes = {
-            'Cycling': 48,
-            'Running': 30,
-            'Aerobics': 22,
-        };
+        let workoutTypes = {};
+        
+        // Try to get workout types data from data attribute
+        const workoutTypesData = ctx.getAttribute('data-workout-types');
+        
+        try {
+            if (workoutTypesData) {
+                const parsedData = JSON.parse(workoutTypesData);
+                console.log('Parsed workout types data:', parsedData);
+                
+                // Convert database format to chart format
+                if (parsedData && parsedData.length > 0) {
+                    parsedData.forEach(item => {
+                        workoutTypes[item.type] = item.count;
+                    });
+                } else {
+                    // Fallback if no workouts found
+                    workoutTypes = {
+                        'No workouts yet': 1
+                    };
+                }
+            } else {
+                // If no data attribute found, check for global variable
+                if (typeof window.workoutTypesData !== 'undefined' && window.workoutTypesData) {
+                    window.workoutTypesData.forEach(item => {
+                        workoutTypes[item.type] = item.count;
+                    });
+                } else {
+                    // Final fallback to default data
+                    console.warn('No workout types data found, using default data');
+                    workoutTypes = {
+                        'Cycling': 48,
+                        'Running': 30,
+                        'Aerobics': 22,
+                    };
+                }
+            }
+        } catch (error) {
+            console.error('Error parsing workout types data:', error);
+            // Fallback data
+            workoutTypes = {
+                'Cycling': 48,
+                'Running': 30,
+                'Aerobics': 22,
+            };
+        }
+        
+        console.log('Final workout types for chart:', workoutTypes);
+        
+        // Generate colors based on number of workout types
+        const colors = generateChartColors(Object.keys(workoutTypes).length);
         
         new Chart(ctx, {
             type: 'pie',
@@ -300,11 +396,7 @@ function initializeWorkoutChart() {
                 labels: Object.keys(workoutTypes),
                 datasets: [{
                     data: Object.values(workoutTypes),
-                    backgroundColor: [
-                        '#3E7B27',  
-                        '#85A947',  
-                        '#99BC85'
-                    ],
+                    backgroundColor: colors,
                     hoverOffset: 4,
                     borderWidth: 1
                 }]
@@ -332,13 +424,38 @@ function initializeWorkoutChart() {
                                 const value = context.raw || 0;
                                 const total = context.dataset.data.reduce((a, b) => a + b, 0);
                                 const percentage = Math.round((value / total) * 100);
-                                return `${label}: ${percentage}%`;
+                                return `${label}: ${value} workouts (${percentage}%)`;
                             }
                         }
                     }
                 }
             }
         });
+    }
+}
+
+// Helper function to generate colors for different numbers of workout types
+function generateChartColors(count) {
+    const baseColors = [
+        '#3E7B27',  // Dark green
+        '#85A947',  // Medium green  
+        '#99BC85',  // Light green
+        '#A8C68F',  // Lighter green
+        '#B7D099',  // Even lighter green
+        '#C6DAA3',  // Pale green
+        '#D5E4AD'   // Very pale green
+    ];
+    
+    // If need more colors than we have, return the base colors repeated if necessary
+    if (count <= baseColors.length) {
+        return baseColors.slice(0, count);
+    } else {
+        // For more than 7 types, cycle through the colors
+        const colors = [];
+        for (let i = 0; i < count; i++) {
+            colors.push(baseColors[i % baseColors.length]);
+        }
+        return colors;
     }
 }
 
@@ -363,108 +480,154 @@ function updateBMIIndicator(bmi) {
   
   // Recalculate on window resize
   window.addEventListener('resize', () => updateBMIIndicator(bmi));
-  
-
-// Scroll-based nav highlighting (only relevant if you stay on a single page)
-window.addEventListener('scroll', function () {
-    const sections = document.querySelectorAll('main section');
-    const navLinks = document.querySelectorAll('.nav-link');
-
-    let current = '';
-    sections.forEach(section => {
-        const sectionTop = section.offsetTop;
-        const sectionHeight = section.clientHeight;
-        if (pageYOffset >= sectionTop - sectionHeight / 3) {
-            current = section.getAttribute('id');
-        }
-    });
-
-    navLinks.forEach(link => {
-        const href = link.getAttribute('href');
-        if (href && href.startsWith('#')) {
-            link.classList.remove('active');
-            if (href === '#' + current) {
-                link.classList.add('active');
-            }
-        }
-    });
-});
 
 function initializeWeightProgressChart() {
-    const ctx = document.getElementById('weightProgressChart').getContext('2d');
-
-// Sample weight data across months
-const weightData = [48, 47.5, 47, 46.8, 46.5, 46.2, 46, 45.8, 45.6, 45.5, 45.4, 45.3];
-const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-
-// Target weight
-const targetWeight = 47;
-
-// Chart configuration
-new Chart(ctx, {
-  type: 'line',
-  data: {
-    labels: months,
-    datasets: [
-      {
-        label: 'Weight (kg)',
-        data: weightData,
-        borderColor: '#3E7B27',
-        backgroundColor: '#E4EFE7',
-        fill: true,
-        tension: 0.3,
-        pointRadius: 4,
-        pointBackgroundColor: '#3E7B27',
-      },
-      {
-        label: 'Target Weight',
-        data: new Array(12).fill(targetWeight), // Constant horizontal line
-        borderColor: '#85A947',
-        borderDash: [6, 6],
-        pointRadius: 0,
-        fill: false,
-      },
-    ],
-  },
-  options: {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: {
-      legend: {
-        position: 'top',
-      },
-    },
-    scales: {
-      y: {
-        title: {
-          display: true,
-          text: 'Weight (kg)',
-        },
-        beginAtZero: false,
-      },
-    },
-  },
-});
-}
-
-// Logout functionality
-const btn_logout = document.querySelector("#btn_logout");
-btn_logout.addEventListener("click", logout);
-
-function logout() {
-    // Retain the 'mealFavourites' in localStorage, clear other data
-    const favourites = localStorage.getItem('mealFavourites');
-
-    // Clear all other data in localStorage
-    localStorage.clear();
-
-    // Restore the 'mealFavourites' back to localStorage
-    if (favourites) {
-        localStorage.setItem('mealFavourites', favourites);
+    const ctx = document.getElementById('weightProgressChart');
+    if (!ctx) {
+        console.error('Weight progress chart canvas not found');
+        return;
     }
 
-    // Redirect after a slight delay
-    setTimeout(function () {
-        window.location.href = "Login.html";
-    }, 500);
+    // Get weight history data from data attributes (ensure consistent naming)
+    let weightLabels = [];
+    let weightData = [];
+    
+    try {
+        weightLabels = JSON.parse(ctx.getAttribute('data-weight-labels') || '[]');
+        weightData = JSON.parse(ctx.getAttribute('data-weight-data') || '[]');
+    } catch (error) {
+        console.error('Error parsing weight data:', error);
+        return;
+    }
+
+    // Check if we have data
+    if (!weightLabels.length || !weightData.length) {
+        console.log('No weight history data available');
+        // Show a message to user instead of empty chart
+        ctx.parentElement.innerHTML = '<p class="text-center text-muted">No weight history data available. Start tracking your weight to see progress!</p>';
+        return;
+    }
+    
+    // Get target weight
+    const targetWeight = JSON.parse(ctx.getAttribute('target-weight') || '[]');
+
+    // Ensure targetWeight is valid
+    if (isNaN(targetWeight)) {
+        console.error('Invalid target weight');
+        return;
+    }
+
+    // Chart configuration
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: weightLabels,
+            datasets: [
+                {
+                    label: 'Weight (kg)',
+                    data: weightData,
+                    borderColor: '#3E7B27',
+                    backgroundColor: 'rgba(62, 123, 39, 0.1)',
+                    fill: true,
+                    tension: 0.3,
+                    pointRadius: 4,
+                    pointBackgroundColor: '#3E7B27',
+                    pointBorderColor: '#ffffff',
+                    pointBorderWidth: 2,
+                },
+                {
+                    label: 'Target Weight',
+                    data: new Array(weightLabels.length).fill(targetWeight),
+                    borderColor: '#85A947',
+                    borderDash: [6, 6],
+                    pointRadius: 0,
+                    pointBackgroundColor: '#85A947',
+                    pointBorderColor: '#ffffff',
+                    pointBorderWidth: 2,
+                    fill: false,
+                    tension: 0,
+                },
+            ],
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'top',
+                    labels: {
+                        usePointStyle: true,
+                        pointStyle: 'circle',
+                        padding: 20,
+                    }
+                },
+                tooltip: {
+                    callbacks: {
+                        title: function(context) {
+                            return `Date: ${context[0].label}`;
+                        },
+                        label: function(context) {
+                            if (context.datasetIndex === 0) {
+                                return `Weight: ${context.raw} kg`;
+                            } else {
+                                return `Target: ${context.raw} kg`;
+                            }
+                        },
+                        afterLabel: function(context) {
+                            if (context.datasetIndex === 0) {
+                                const diff = context.raw - targetWeight;
+                                if (diff > 0) {
+                                    return `${diff.toFixed(1)} kg above target`;
+                                } else if (diff < 0) {
+                                    return `${Math.abs(diff).toFixed(1)} kg below target`;
+                                } else {
+                                    return 'At target weight!';
+                                }
+                            }
+                            return '';
+                        },
+                        labelColor: function(context) {
+    if (context.datasetIndex === 0) {
+        return {
+            borderColor: '#3E7B27',
+            backgroundColor: '#3E7B27',
+        };
+    } else {
+        return {
+            borderColor: '#85A947',
+            backgroundColor: '#85A947',
+        };
+    }
+}
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    title: {
+                        display: true,
+                        text: 'Weight (kg)',
+                    },
+                    beginAtZero: false,
+                    // Safely calculate min/max with fallbacks
+                    min: Math.min(...weightData.filter(w => !isNaN(w)), targetWeight) - 2,
+                    max: Math.max(...weightData.filter(w => !isNaN(w)), targetWeight) + 2,
+                },
+                x: {
+                    title: {
+                        display: true,
+                        text: 'Date',
+                    },
+                    ticks: {
+                        maxRotation: 45,
+                        minRotation: 0
+                    }
+                },
+            },
+            interaction: {
+                intersect: false,
+                mode: 'index'
+            }
+        },
+    });
 }

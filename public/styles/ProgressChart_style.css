@@ -108,6 +108,8 @@ main {
   stroke: #99BC85;
   stroke-linecap: round;
   transition: stroke-dashoffset 0.5s ease;
+  stroke-dasharray: 565.5;
+  stroke-dashoffset: 565.5; 
 }
 
 .streak-content {
@@ -129,6 +131,25 @@ main {
   object-fit: cover;
   display: block;
 }
+
+.calories-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.view-selector select {
+    border: 1px solid #ccc;
+    color: #333;
+    background-color: white;
+  }
+
+  .view-selector select:focus {
+    border-color: #85A947;   /* Your desired green */
+    outline: none;           /* Remove default blue outline */
+    box-shadow: 0 0 0 2px rgba(133, 169, 71, 0.3); /* Optional glow effect */
+  }
+
 
 /* Media queries for responsiveness */
 @media (max-width: 1200px) {
