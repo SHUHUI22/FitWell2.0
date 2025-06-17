@@ -1,5 +1,5 @@
 body {
-    background-color: #e8f1f1;
+    background-color: #e8f1f1 !important;
 }
 
 .tab-container {
@@ -38,12 +38,13 @@ body {
     padding: 30px;
     border-radius: 10px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    min-height: 75vh !important;
 }
 
 /* Empty state styling */
 .empty-state {
     text-align: center;
-    padding: 40px 20px;
+    padding: 80px 20px;
 }
 
 .empty-state img {

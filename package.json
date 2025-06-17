@@ -20,6 +20,7 @@
     "mongodb": "^6.16.0",
     "mongoose": "^8.15.0",
     "multer": "^2.0.1",
+    "node-cron": "^4.1.0",
     "nodemailer": "^7.0.3",
     "nodemon": "^3.1.10"
   },
@@ -35,5 +36,4 @@
     "url": "https://github.com/SHUHUI22/FitWell2.0/issues"
   },
   "homepage": "https://github.com/SHUHUI22/FitWell2.0#readme"
-
 }

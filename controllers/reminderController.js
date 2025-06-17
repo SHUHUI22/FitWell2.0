@@ -1,24 +1,14 @@
-const dotenv = require('dotenv');
-dotenv.config();
-
 const nodemailer = require('nodemailer');
+const cron = require('node-cron');
 const Reminder = require('../models/Reminder');
 const Users = require('../models/Users');
-
-// Helper: Get user email by session ID
-const getCurrentUserEmail = async (req) => {
-  if (!req.session.userId) throw new Error('User not logged in');
-  const user = await Users.findById(req.session.userId);
-  if (!user) throw new Error('User not found');
-  return user.email;
-};
 
 // Email transporter
 const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS
+    user: "usersh22sh@gmail.com",
+    pass: "lzux cbxf dpoj pqlw"
   }
 });
 
@@ -52,12 +42,10 @@ exports.showListPage = async (req, res) => {
 
     const formattedReminders = reminders.map(r => {
       const dateObj = new Date(r.date);
-
       const yyyy = dateObj.getFullYear();
       const mm = String(dateObj.getMonth() + 1).padStart(2, '0');
       const dd = String(dateObj.getDate()).padStart(2, '0');
       const formattedDate = `${yyyy}-${mm}-${dd}`;
-
       const capitalizedRepeat =
         r.repeat === 'none' ? 'Once' : r.repeat.charAt(0).toUpperCase() + r.repeat.slice(1);
 
@@ -98,7 +86,7 @@ exports.createReminder = async (req, res) => {
     const currentDate = new Date();
     userDate.setHours(0, 0, 0, 0);
     currentDate.setHours(0, 0, 0, 0);
-
+    
     if (userDate < currentDate) {
       return res.render('CreateReminder', {
         currentTab: 'create',
@@ -108,33 +96,12 @@ exports.createReminder = async (req, res) => {
       });
     }
 
-    const userEmail = await getCurrentUserEmail(req);
-
     const reminder = new Reminder({
       ...req.body,
       date: new Date(`${req.body.date}T00:00:00.000Z`),
       userId: req.session.userId
     });
     await reminder.save();
-
-    const user = await Users.findById(req.session.userId);
-    const isNotificationEnabled = user?.notification?.[reminder.category];
-
-    if (isNotificationEnabled) {
-      const mailOptions = {
-        from: `"FitWell App" <${process.env.EMAIL_USER}>`,
-        to: userEmail,
-        subject: 'Ding ding! Time for your FitWell Mission',
-        text: `You created a new reminder:\n\nTitle: ${reminder.title}\nCategory: ${reminder.category}\nDate: ${reminder.date}\nTime: ${reminder.time}\nRepeat: ${reminder.repeat}`,
-      };
-
-      try {
-        await transporter.sendMail(mailOptions);
-        console.log('Email sent successfully');
-      } catch (emailErr) {
-        console.error('Email sending failed:', emailErr);
-      }
-    }
 
     req.session.successMessage = 'Reminder created successfully!';
     res.redirect('/FitWell/reminders/my-reminders');
@@ -148,6 +115,55 @@ exports.createReminder = async (req, res) => {
     });
   }
 };
+
+// 🔁 CRON JOB: Check reminders every minute and send emails
+cron.schedule('* * * * *', async () => {
+  const now = new Date();
+  const currentHour = now.getHours();
+  const currentMinute = now.getMinutes();
+  const currentDateStr = now.toISOString().split('T')[0];
+  try {
+    const reminders = await Reminder.find({});
+    for (const reminder of reminders) {
+      const reminderDate = new Date(reminder.date);
+      const [hour, minute] = reminder.time.split(':').map(Number);
+      const isSameDay = reminderDate.toISOString().split('T')[0] === currentDateStr;
+      const isSameTime = hour === currentHour && minute === currentMinute;
+      if (isSameDay && isSameTime) {
+        const user = await Users.findById(reminder.userId);
+        if (!user) continue;
+        const isNotificationEnabled = user?.notification?.[reminder.category];
+        if (!isNotificationEnabled) continue;
+        const mailOptions = {
+          from: "FitWell <usersh22sh@gmail.com>",
+          to: user.email,
+          subject: '⏰ Ding ding! Time for your FitWell mission!',
+          text: `Reminder:\n\nTitle: ${reminder.title}\nCategory: ${reminder.category}\nRepeat: ${reminder.repeat}`
+        };
+        try {
+          await transporter.sendMail(mailOptions);
+          console.log(`Reminder email sent to ${user.email}`);
+        } catch (err) {
+          console.error(`Failed to send email to ${user.email}:`, err);
+        }
+        // Handle repeat
+        if (reminder.repeat === 'daily') {
+          reminder.date.setDate(reminder.date.getDate() + 1);
+          await reminder.save();
+        } else if (reminder.repeat === 'weekly') {
+          reminder.date.setDate(reminder.date.getDate() + 7);
+          await reminder.save();
+        } else if (reminder.repeat === 'monthly') {
+          reminder.date.setMonth(reminder.date.getMonth() + 1);
+          await reminder.save();
+        }
+        // No action for 'none'
+      }
+    }
+  } catch (err) {
+    console.error('Cron job error:', err);
+  }
+});
 
 // Update reminder
 exports.updateReminder = async (req, res) => {
@@ -167,9 +183,9 @@ exports.updateReminder = async (req, res) => {
     if (userDate < currentDate) {
       return res.status(400).json({ message: 'Date cannot be in the past' });
     }
-
-    req.body.date = userDate;
-
+    
+    // req.body.date = userDate;
+    req.body.date = new Date(`${req.body.date}T00:00:00.000Z`);
     const reminder = await Reminder.findOneAndUpdate(
       { _id: id, userId: req.session.userId },
       req.body,
@@ -203,4 +219,3 @@ exports.deleteReminder = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
-
