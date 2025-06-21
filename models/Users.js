@@ -77,19 +77,7 @@ const userSchema = new mongoose.Schema({
             default: true
         }
     },
-
-    resetPasswordToken: {type: String},
-//     resetPasswordExpires: {type: Date},
-
-//    notification: {
-//   type: Object,
-//   default: {
-//     water: true,
-//     nutrition: true,
-//     workout: true
-//   }
-// }
- 
+    resetPasswordToken: {type: String}, 
     resetPasswordExpires: {type: Date}
     
 });

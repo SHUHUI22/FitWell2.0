@@ -61,69 +61,48 @@ document.querySelectorAll(".dropdown-item").forEach(item => {
 document.getElementById("btn-search").addEventListener("click", searchMeal);
 
 async function searchMeal() {
-  // Get search input value
   const query = document.getElementById("search-input").value.trim();
-
   const resultsContainer = document.getElementById('search-result');
   resultsContainer.innerHTML = "<p>Loading...</p>";
 
-  let filterParams = "";
+  if (!query) {
+    resultsContainer.innerHTML = "<p>Please enter a search term.</p>";
+    return;
+  }
 
-  // Apply nutritional filtering based on selected goal
-  if (selectedGoal === "weight-loss") {
-    filterParams = "&maxCalories=400&minProtein=10";
-  } else if (selectedGoal === "muscle-gain") {
-    filterParams = "&minProtein=25&minCalories=400";
-  } else if (selectedGoal === "maintenance") {
-    filterParams = "&minCalories=400&maxCalories=600";
-  }
-  else if (selectedGoal === "none" || selectedGoal === "") {
-    filterParams = ""; // No filters applied
-  }
-  
   try {
-    // Call Spoonacular API to search for recipes
-    const searchRes = await fetch(`https://api.spoonacular.com/recipes/complexSearch?query=${query}${filterParams}&number=10&addRecipeNutrition=true&apiKey=${apiKey}`);
-    const searchData = await searchRes.json();
-
-    // Clear loading message
+    const response = await fetch(`/FitWell/api/meals?query=${encodeURIComponent(query)}&goal=${selectedGoal}`);
+    const meals = await response.json();
     resultsContainer.innerHTML = "";
 
-    // Check if any results were returned
-    if (!searchData.results || searchData.results.length === 0) {
-      resultsContainer.innerHTML = "<p>No results found. Try another keyword or adjust your goal.</p>";
+    if (!Array.isArray(meals) || meals.length === 0) {
+      resultsContainer.innerHTML = "<p>No results found.</p>";
       return;
     }
 
-    // Loop through each meal result
-    for (let recipe of searchData.results) {
-      const infoRes = await fetch(`https://api.spoonacular.com/recipes/${recipe.id}/information?includeNutrition=true&apiKey=${apiKey}`);
-      const info = await infoRes.json();
-
-      // Create a card to display meal information
+    for (let info of meals) {
       const mealDiv = document.createElement("div");
-      mealDiv.classList.add("card")
+      mealDiv.classList.add("card");
       mealDiv.innerHTML = `
-            <div class="card-body d-flex justify-content-between align-items-center">
-                <div>
-                    <h5 class="card-title meal-title">${info.title}</h5>
-                    <div class="nutrition d-flex gap-3">
-                      <p class="meal-calorie"><strong>Calories:</strong> ${getNutrient(info.nutrition, 'Calories')}</p>
-                      <p class="meal-protein"><strong>Protein:</strong> ${getNutrient(info.nutrition, 'Protein')}</p>
-                      <p class="meal-fat"><strong>Fat:</strong> ${getNutrient(info.nutrition, 'Fat')}</p>
-                    </div>
-                </div>
-                <img src="${info.image}" alt="${info.title}">
+        <div class="card-body d-flex justify-content-between align-items-center">
+          <div>
+            <h5 class="card-title meal-title">${info.title}</h5>
+            <div class="nutrition d-flex gap-3">
+              <p class="meal-calorie"><strong>Calories:</strong> ${getNutrient(info.nutrition, 'Calories')}</p>
+              <p class="meal-protein"><strong>Protein:</strong> ${getNutrient(info.nutrition, 'Protein')}</p>
+              <p class="meal-fat"><strong>Fat:</strong> ${getNutrient(info.nutrition, 'Fat')}</p>
             </div>
-        `;
-      // Add event to open modal with full recipe steps when the card is clicked
-      mealDiv.addEventListener('click', () => showRecipeSteps(info)); // Add click event to show recipe steps
+          </div>
+          <img src="${info.image}" alt="${info.title}">
+        </div>
+      `;
+      mealDiv.addEventListener('click', () => showRecipeSteps(info));
       resultsContainer.appendChild(mealDiv);
     }
-  }
-  catch (err) {
-    console.error(err);
-    resultsContainer.innerHTML = 'Error fetching data.';
+
+  } catch (error) {
+    console.error('Frontend error:', error);
+    resultsContainer.innerHTML = "<p>Error retrieving meals. Try again later.</p>";
   }
 }
 

@@ -56,10 +56,7 @@ const summaryScheme = new mongoose.Schema({
     duration: { 
         type: Number, 
         required: true 
-    },
-    icon: {
-        type: String
-    } 
+    }
 });
 
 const Workout = mongoose.model('Workout', workoutSchema);

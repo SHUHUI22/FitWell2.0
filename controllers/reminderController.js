@@ -149,12 +149,15 @@ cron.schedule('* * * * *', async () => {
         // Handle repeat
         if (reminder.repeat === 'daily') {
           reminder.date.setDate(reminder.date.getDate() + 1);
+          reminder.markModified('date'); // tell Mongoose this field changed
           await reminder.save();
         } else if (reminder.repeat === 'weekly') {
           reminder.date.setDate(reminder.date.getDate() + 7);
+          reminder.markModified('date'); // tell Mongoose this field changed
           await reminder.save();
         } else if (reminder.repeat === 'monthly') {
           reminder.date.setMonth(reminder.date.getMonth() + 1);
+          reminder.markModified('date'); // tell Mongoose this field changed
           await reminder.save();
         }
         // No action for 'none'
