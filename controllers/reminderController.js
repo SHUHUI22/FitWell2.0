@@ -138,7 +138,24 @@ cron.schedule('* * * * *', async () => {
           from: "FitWell <usersh22sh@gmail.com>",
           to: user.email,
           subject: '⏰ Ding ding! Time for your FitWell mission!',
-          text: `Reminder:\n\nTitle: ${reminder.title}\nCategory: ${reminder.category}\nRepeat: ${reminder.repeat}`
+          text: `Hi ${user.username || 'there'}, 👋
+
+This is your gentle reminder from FitWell! 💪
+
+🔔 Reminder Details:
+• 🏷️ Title: ${reminder.title}
+• 📂 Category: ${reminder.category}
+• 🔁 Repeat: ${reminder.repeat || 'None'}
+
+📅 Date: ${new Date(reminder.date).toLocaleDateString()}
+🕒 Time: ${reminder.time}
+
+Stay consistent — every small action counts toward your health journey! 🌱
+
+You can manage your reminders in the FitWell web application anytime.
+
+Best,
+The FitWell Team 💚`
         };
         try {
           await transporter.sendMail(mailOptions);
