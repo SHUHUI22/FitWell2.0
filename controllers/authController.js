@@ -84,7 +84,13 @@ async function loginUser(req, res) {
         req.session.username = user.username;
         req.session.email= user.email;
 
-        return res.redirect("/FitWell");
+        req.session.save((err) => {
+            if (err) {
+                console.error("Session save error:", err);
+                return res.status(500).send("Login session failed.");
+            }
+            return res.redirect("/FitWell");
+        });
     }
     catch (error) {
         console.log(error);

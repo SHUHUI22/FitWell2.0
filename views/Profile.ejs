@@ -13,7 +13,7 @@
               <% if (user.profilePic && user.profilePic.data) { %>
                 <img src="data:<%= user.profilePic.contentType %>;base64,<%= user.profilePic.data.toString('base64') %>" class="avatar" id="profilePic"/>
               <% } else { %>
-                <img src="/images/signup&login.jpg" class="avatar" id="profilePic"/>
+                <img src="/images/profile.jpg" class="avatar" id="profilePic"/>
               <% } %>
               <h2><%= user.username %></h2>
               <div class="info-row"><span><strong>Email</strong></span><span><%= user.email %></span></div>
@@ -112,7 +112,7 @@
                           class="avatar mb-2" 
                           id="modalProfilePicPreview" />
                     <% } else { %>
-                      <img src="/images/signup&login.jpg" 
+                      <img src="/images/profile.jpg" 
                           class="avatar mb-2" 
                           id="modalProfilePicPreview" />
                     <% } %>
