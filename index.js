@@ -31,9 +31,6 @@ app.use(express.static(path.join(__dirname,'public')));
 app.use(express.urlencoded({ extended: true })); 
 app.use(express.json());
 
-//To parse JSON request body:
-app.use(express.json());
-
 // Session middleware
 const session = require("express-session");
 const MongoStore = require("connect-mongo");
