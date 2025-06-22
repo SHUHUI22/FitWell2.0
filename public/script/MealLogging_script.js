@@ -388,14 +388,19 @@ function addMealToDisplay(meal, mealList) {
 }
 
 // Edit meal servings
-async function editMealServings(mealId, currentServings) {
-    const newServings = prompt(`Enter new number of servings:`, currentServings);
-    
-    if (newServings === null) return; // User cancelled
-    
-    const servings = parseFloat(newServings);
-    
-    if (isNaN(servings) || servings <= 0) {
+function editMealServings(mealId, currentServings) {
+    document.getElementById('edit-meal-id').value = mealId;
+    document.getElementById('edit-servings-input').value = currentServings;
+
+    const modal = new bootstrap.Modal(document.getElementById('editServingsModal'));
+    modal.show();
+}
+
+document.getElementById('confirm-edit-servings').addEventListener('click', async function () {
+    const mealId = document.getElementById('edit-meal-id').value;
+    const newServings = parseFloat(document.getElementById('edit-servings-input').value);
+
+    if (isNaN(newServings) || newServings <= 0) {
         showNotification('Please enter a valid number of servings', 'error');
         return;
     }
@@ -403,21 +408,19 @@ async function editMealServings(mealId, currentServings) {
     try {
         const response = await fetch(`/FitWell/NutritionPlanner/MealLogging/meal/${mealId}`, {
             method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                servings: servings
-            })
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ servings: newServings })
         });
 
         const result = await response.json();
 
         if (response.ok && result.success) {
-            // Reload meals for current date
             const selectedDate = document.getElementById('log-date').value;
             await loadMealsForDate(selectedDate);
             showNotification('Meal updated successfully!', 'success');
+
+            const modalInstance = bootstrap.Modal.getInstance(document.getElementById('editServingsModal'));
+            modalInstance.hide();
         } else {
             throw new Error(result.error || 'Failed to update meal');
         }
@@ -425,13 +428,57 @@ async function editMealServings(mealId, currentServings) {
         console.error('Error updating meal:', error);
         showNotification('Error updating meal: ' + error.message, 'error');
     }
-}
+});
+
+// async function editMealServings(mealId, currentServings) {
+//     const newServings = prompt(`Enter new number of servings:`, currentServings);
+    
+//     if (newServings === null) return; // User cancelled
+    
+//     const servings = parseFloat(newServings);
+    
+//     if (isNaN(servings) || servings <= 0) {
+//         showNotification('Please enter a valid number of servings', 'error');
+//         return;
+//     }
+
+//     try {
+//         const response = await fetch(`/FitWell/NutritionPlanner/MealLogging/meal/${mealId}`, {
+//             method: 'PUT',
+//             headers: {
+//                 'Content-Type': 'application/json',
+//             },
+//             body: JSON.stringify({
+//                 servings: servings
+//             })
+//         });
+
+//         const result = await response.json();
+
+//         if (response.ok && result.success) {
+//             // Reload meals for current date
+//             const selectedDate = document.getElementById('log-date').value;
+//             await loadMealsForDate(selectedDate);
+//             showNotification('Meal updated successfully!', 'success');
+//         } else {
+//             throw new Error(result.error || 'Failed to update meal');
+//         }
+//     } catch (error) {
+//         console.error('Error updating meal:', error);
+//         showNotification('Error updating meal: ' + error.message, 'error');
+//     }
+// }
 
 // Delete meal from database
-async function deleteMeal(mealId) {
-    if (!confirm('Are you sure you want to delete this meal?')) {
-        return;
-    }
+function deleteMeal(mealId) {
+    document.getElementById('delete-meal-id').value = mealId;
+
+    const modal = new bootstrap.Modal(document.getElementById('deleteConfirmModal'));
+    modal.show();
+}
+
+document.getElementById('confirm-delete-meal').addEventListener('click', async function () {
+    const mealId = document.getElementById('delete-meal-id').value;
 
     try {
         const response = await fetch(`/FitWell/NutritionPlanner/MealLogging/meal/${mealId}`, {
@@ -441,10 +488,12 @@ async function deleteMeal(mealId) {
         const result = await response.json();
 
         if (response.ok && result.success) {
-            // Reload meals for current date
             const selectedDate = document.getElementById('log-date').value;
             await loadMealsForDate(selectedDate);
             showNotification('Meal deleted successfully!', 'success');
+
+            const modalInstance = bootstrap.Modal.getInstance(document.getElementById('deleteConfirmModal'));
+            modalInstance.hide();
         } else {
             throw new Error(result.error || 'Failed to delete meal');
         }
@@ -452,7 +501,33 @@ async function deleteMeal(mealId) {
         console.error('Error deleting meal:', error);
         showNotification('Error deleting meal: ' + error.message, 'error');
     }
-}
+});
+
+// async function deleteMeal(mealId) {
+//     if (!confirm('Are you sure you want to delete this meal?')) {
+//         return;
+//     }
+
+//     try {
+//         const response = await fetch(`/FitWell/NutritionPlanner/MealLogging/meal/${mealId}`, {
+//             method: 'DELETE'
+//         });
+
+//         const result = await response.json();
+
+//         if (response.ok && result.success) {
+//             // Reload meals for current date
+//             const selectedDate = document.getElementById('log-date').value;
+//             await loadMealsForDate(selectedDate);
+//             showNotification('Meal deleted successfully!', 'success');
+//         } else {
+//             throw new Error(result.error || 'Failed to delete meal');
+//         }
+//     } catch (error) {
+//         console.error('Error deleting meal:', error);
+//         showNotification('Error deleting meal: ' + error.message, 'error');
+//     }
+// }
 
 // Update summary table
 function updateSummaryTable(totals) {
