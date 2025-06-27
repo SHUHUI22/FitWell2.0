@@ -39,10 +39,12 @@ async function getNutrition() {
   const inputList = input.split(',').map(item => item.trim()).join('\n');
   const outputDiv = document.getElementById('output');
   outputDiv.innerHTML = '<div class="loading">Loading...</div>';
-  document.getElementById('search-input').value = '';
 
   if (!input) {
-    outputDiv.innerHTML = '<div class="error">Please enter ingredients.</div>';
+    outputDiv.innerHTML = `
+      <div class="subtitle">For: <strong>${input}</strong></div>
+      <div class="error">Please enter ingredients.</div>
+    `;
     return;
   }
 
@@ -55,26 +57,50 @@ async function getNutrition() {
       body: JSON.stringify({ ingredientList: inputList })
     });
 
-    const data = await response.json();
+    let data;
+    try {
+      data = await response.json();
+    } catch (e) {
+      outputDiv.innerHTML = `
+        <div class="subtitle">For: <strong>${input}</strong></div>
+        <div class="error">Invalid server response.</div>
+      `;
+      console.error("❌ Failed to parse JSON:", e);
+      return;
+    }
+
+    console.log("🔍 API response:", data);
+
+    let resultHTML = `<div class="subtitle">For: <strong>${input}</strong></div>`;
+
+    if (!response.ok) {
+      resultHTML += `<div class="error">${data.error || "Something went wrong."}</div>`;
+      outputDiv.innerHTML = resultHTML;
+      document.getElementById('search-input').value = '';
+      return;
+    }
 
     if (!data.nutrientMap) {
-      outputDiv.innerHTML = '<div class="error">No nutrition data found.</div>';
+      resultHTML += `<div class="error">No nutrition data found.</div>`;
+      outputDiv.innerHTML = resultHTML;
       return;
     }
 
     const tableHTML = generateStructuredTable(data.nutrientMap, nutrientGroups);
-    outputDiv.innerHTML = `
-      <div class="subtitle">For: <strong>${input}</strong></div>
+    resultHTML += `
       ${tableHTML}
       <div class="note">* Nutritional values are sourced from the Spoonacular API and may vary based on ingredient quality.</div>
     `;
+    outputDiv.innerHTML = resultHTML;
 
   } catch (err) {
     console.error(err);
-    outputDiv.innerHTML = '<div class="error">Failed to fetch data. Please try again.</div>';
+    outputDiv.innerHTML = `
+      <div class="subtitle">For: <strong>${input}</strong></div>
+      <div class="error">Failed to fetch data. Please try again.</div>
+    `;
   }
 }
-
 
 function generateStructuredTable(nutrientMap, groups) {
   const groupIcons = {

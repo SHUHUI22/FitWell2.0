@@ -71,12 +71,6 @@ else if (params.get("error") === "wrongpassword") {
         title: 'Incorrect Password',
         text: 'Please try again.',
     });
-} else if (params.get("success") === "registered") {
-    Swal.fire({
-        icon: 'success',
-        title: 'Registration Successful',
-        text: 'You can now log in!',
-    });
 }
 else if (params.get("success") === "resetSent") {
         Swal.fire({

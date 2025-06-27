@@ -13,7 +13,7 @@ const analyzeIngredients = async (req, res) => {
     const { ingredientList } = req.body;
 
     if (!ingredientList) {
-        return res.status(400).json({ error: "Ingredient list is required." });
+        return res.status(400).json({ error: "Please enter ingredients." });
     }
 
     try {
@@ -32,6 +32,7 @@ const analyzeIngredients = async (req, res) => {
 
         const parsedData = parseRes.data;
         if (!Array.isArray(parsedData) || parsedData.length === 0) {
+            console.log("🚫 No ingredients parsed");
             return res.status(404).json({ error: "No ingredients found." });
         }
 
@@ -51,6 +52,12 @@ const analyzeIngredients = async (req, res) => {
 
             const nutrients = infoRes.data.nutrition?.nutrients || [];
             allNutrients.push(...nutrients);
+        }
+
+        if (allNutrients.length === 0) {
+            return res.status(404).json({ error: "No valid nutrients found for the provided ingredients. <br>"+
+                "Please check for typos, use simple ingredient names (e.g., '2 eggs', '1 cup milk'), " +
+               "and avoid using symbols or overly generic terms." });
         }
 
         // Merge nutrients
